@@ -18,7 +18,6 @@ struct CimStats {
   std::size_t pair_tests = 0;
 };
 
-int cim_max_grid_side(double L, double rc, double r_max);
 std::pair<int, int> cim_grid_dimensions(double L, double W, double rc,
                                         double r_max);
 

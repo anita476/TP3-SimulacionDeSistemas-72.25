@@ -9,14 +9,7 @@
 #include "geometry.hpp"
 #include "linked_cell_grid.hpp"
 
-int cim_max_grid_side(double L, double rc, double r_max) {
-  const double reach = rc + 2.0 * r_max;
-  if (reach <= 0.0 || L <= 0.0)
-    return 0;
-  const int m = static_cast<int>(std::floor(L / reach));
-  return m > 0 ? m : 0;
-}
-
+/* returns max mx and my now that we are working with a rectangle*/
 std::pair<int, int> cim_grid_dimensions(double L, double W, double rc,
                                         double r_max) {
   const double reach = rc + 2.0 * r_max;
@@ -75,9 +68,8 @@ NeighborLists cim_sweep(const std::vector<Particle> &particles, double L,
   const auto t_built = Clock::now();
 
   if constexpr (Trace) {
-        *trace << "L " << L << "\nW " << W << "\nMX " << Mx << "\nMY " << My
-          << "\nRC " << rc << "\nPERIODIC "
-           << (periodic ? 1 : 0) << '\n';
+    *trace << "L " << L << "\nW " << W << "\nMX " << Mx << "\nMY " << My
+           << "\nRC " << rc << "\nPERIODIC " << (periodic ? 1 : 0) << '\n';
     for (int i = 0; i < n; ++i) {
       *trace << "P " << i << ' ' << particles[i].x << ' ' << particles[i].y
              << ' ' << particles[i].r << '\n';
@@ -100,7 +92,8 @@ NeighborLists cim_sweep(const std::vector<Particle> &particles, double L,
   auto test_pair = [&](int a, int b, [[maybe_unused]] const char *tag) {
     if constexpr (Count)
       ++pair_tests;
-    const bool hit = within_cutoff(particles[a], particles[b], rc, L, W, periodic);
+    const bool hit =
+        within_cutoff(particles[a], particles[b], rc, L, W, periodic);
     if (hit) {
       neighbors[a].push_back(b);
       neighbors[b].push_back(a);
@@ -193,9 +186,9 @@ NeighborLists cim_neighbors(const std::vector<Particle> &particles, double L,
 }
 
 NeighborLists cim_linked_neighbors(const std::vector<Particle> &particles,
-                                   double L, double W, double rc, int Mx, int My,
-                                   bool periodic,
-                                   std::ostream *trace, CimStats *stats) {
+                                   double L, double W, double rc, int Mx,
+                                   int My, bool periodic, std::ostream *trace,
+                                   CimStats *stats) {
   return cim_dispatch<LinkedCellGrid>(particles, L, W, rc, Mx, My, periodic,
                                       trace, stats);
 }

@@ -9,28 +9,40 @@
 // next_[i] = next id in i's cell (-1 at end of chain).
 class LinkedCellGrid {
 public:
-  LinkedCellGrid(double L, int M, int n)
-      : L_(L), M_(M),
-        head_(static_cast<std::size_t>(M) * static_cast<std::size_t>(M), kNone),
+  LinkedCellGrid(double L, double W, int Mx, int My, int n)
+      : L_(L), W_(W), Mx_(Mx), My_(My),
+        head_(static_cast<std::size_t>(Mx) * static_cast<std::size_t>(My),
+              kNone),
         next_(static_cast<std::size_t>(n > 0 ? n : 0), kNone) {}
 
-  int side() const { return M_; }
-  int cell_count() const { return M_ * M_; }
-  double cell_size() const { return L_ / M_; }
+  int side() const { return Mx_; }
+  int width() const { return My_; }
+  int cell_count() const { return Mx_ * My_; }
+  double cell_size() const { return L_ / Mx_; }
 
-  int cell_coord(double v) const {
-    const int c = static_cast<int>(v * M_ / L_);
+  int cell_coord_x(double v) const {
+    const int c = static_cast<int>(v * Mx_ / L_);
     if (c < 0)
       return 0;
-    if (c >= M_)
-      return M_ - 1;
+    if (c >= Mx_)
+      return Mx_ - 1;
     return c;
   }
 
-  int cell_index(int cx, int cy) const { return cy * M_ + cx; }
+  int cell_coord_y(double v) const {
+    const int c = static_cast<int>(v * My_ / W_);
+    if (c < 0)
+      return 0;
+    if (c >= My_)
+      return My_ - 1;
+    return c;
+  }
+
+  int cell_coord(double v) const { return cell_coord_x(v); }
+  int cell_index(int cx, int cy) const { return cy * Mx_ + cx; }
 
   void insert(int id, double x, double y) {
-    const int c = cell_index(cell_coord(x), cell_coord(y));
+    const int c = cell_index(cell_coord_x(x), cell_coord_y(y));
     next_[static_cast<std::size_t>(id)] = head_[static_cast<std::size_t>(c)];
     head_[static_cast<std::size_t>(c)] = id;
   }
@@ -98,7 +110,9 @@ private:
   static constexpr int kNone = -1;
 
   double L_;
-  int M_;
+  double W_;
+  int Mx_;
+  int My_;
   std::vector<int> head_;
   std::vector<int> next_;
 };

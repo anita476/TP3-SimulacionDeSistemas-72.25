@@ -21,6 +21,7 @@ FetchContent_MakeAvailable(argparse)
 
 add_executable(EventDrivenSim
     src/main.cpp
+    src/utils/neighbours.cpp
 )
 
 

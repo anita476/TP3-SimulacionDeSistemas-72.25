@@ -69,11 +69,10 @@ Testing/
 .cache/
 
 
-
 # OS
 .DS_Store
 
 # Python 
 .venv 
-__py_cache__
+__pycache__
 .log

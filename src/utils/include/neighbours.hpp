@@ -2,6 +2,7 @@
 
 #include <cstddef>
 #include <iosfwd>
+#include <utility>
 #include <vector>
 
 #include "particle.hpp"
@@ -18,26 +19,30 @@ struct CimStats {
 };
 
 int cim_max_grid_side(double L, double rc, double r_max);
+std::pair<int, int> cim_grid_dimensions(double L, double W, double rc,
+                                        double r_max);
 
 double max_radius(const std::vector<Particle> &particles);
 
 NeighborLists brute_force_neighbors(const std::vector<Particle> &particles,
-                                    double L, double rc, bool periodic);
+                                    double L, double W, double rc, bool periodic);
 
-// MxM CIM + half-shell. `cim` uses CellGrid; `cim_linked` uses HEAD/LIST.
+// Mx by My CIM + half-shell. `cim` uses CellGrid; `cim_linked` uses HEAD/LIST.
 // Same pairs; list order may differ. Non-null `trace` logs the sweep.
 NeighborLists cim_neighbors(const std::vector<Particle> &particles, double L,
-                            double rc, int M, bool periodic,
+                            double W, double rc, int Mx, int My, bool periodic,
                             std::ostream *trace = nullptr,
                             CimStats *stats = nullptr);
 
 NeighborLists cim_linked_neighbors(const std::vector<Particle> &particles,
-                                   double L, double rc, int M, bool periodic,
+                                   double L, double W, double rc, int Mx, int My,
+                                   bool periodic,
                                    std::ostream *trace = nullptr,
                                    CimStats *stats = nullptr);
 
 // Counters only (pair_tests / memory); timings are meaningless here.
 CimStats cim_untimed_stats(const std::vector<Particle> &particles, double L,
-                           double rc, int M, bool periodic, bool linked);
+                           double W, double rc, int Mx, int My, bool periodic,
+                           bool linked);
 
 inline std::size_t brute_pair_tests(std::size_t n) { return n * (n - 1) / 2; }

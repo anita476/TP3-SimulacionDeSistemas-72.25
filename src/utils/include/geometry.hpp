@@ -16,9 +16,14 @@ inline double axis_separation(double d, double L, bool periodic) {
 
 // Border-to-border distance < cutoff (centre-to-centre when r = 0).
 inline bool within_cutoff(const Particle &a, const Particle &b, double cutoff,
-                          double L, bool periodic) {
+                          double L, double W, bool periodic) {
   const double dx = axis_separation(a.x - b.x, L, periodic);
-  const double dy = axis_separation(a.y - b.y, L, periodic);
+  const double dy = axis_separation(a.y - b.y, W, periodic);
   const double reach = cutoff + a.r + b.r;
   return dx * dx + dy * dy < reach * reach;
+}
+
+inline bool within_cutoff(const Particle &a, const Particle &b, double cutoff,
+                          double L, bool periodic) {
+  return within_cutoff(a, b, cutoff, L, L, periodic);
 }

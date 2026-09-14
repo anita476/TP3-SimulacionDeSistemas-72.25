@@ -3,31 +3,41 @@
 #include <cstddef>
 #include <vector>
 
-// M x M cells over [0,L) x [0,L); each cell stores particle ids by centre.
+// Mx x My cells over [0,L) x [0,W); each cell stores particle ids by centre.
 class CellGrid {
 public:
-  // `n` unused; kept so CellGrid and LinkedCellGrid share the same ctor shape.
-  CellGrid(double L, int M, int /*n*/ = 0)
-      : L_(L), M_(M),
-        cells_(static_cast<std::size_t>(M) * static_cast<std::size_t>(M)) {}
+  CellGrid(double L, double W, int Mx, int My, int /*n*/ = 0)
+      : L_(L), W_(W), Mx_(Mx), My_(My),
+        cells_(static_cast<std::size_t>(Mx) * static_cast<std::size_t>(My)) {}
 
-  int side() const { return M_; }
-  int cell_count() const { return M_ * M_; }
-  double cell_size() const { return L_ / M_; }
+  int side() const { return Mx_; }
+  int width() const { return My_; }
+  int cell_count() const { return Mx_ * My_; }
+  double cell_size() const { return L_ / Mx_; }
 
-  int cell_coord(double v) const {
-    const int c = static_cast<int>(v * M_ / L_);
+  int cell_coord_x(double v) const {
+    const int c = static_cast<int>(v * Mx_ / L_);
     if (c < 0)
       return 0;
-    if (c >= M_)
-      return M_ - 1;
+    if (c >= Mx_)
+      return Mx_ - 1;
     return c;
   }
 
-  int cell_index(int cx, int cy) const { return cy * M_ + cx; }
+  int cell_coord_y(double v) const {
+    const int c = static_cast<int>(v * My_ / W_);
+    if (c < 0)
+      return 0;
+    if (c >= My_)
+      return My_ - 1;
+    return c;
+  }
+
+  int cell_coord(double v) const { return cell_coord_x(v); }
+  int cell_index(int cx, int cy) const { return cy * Mx_ + cx; }
 
   void insert(int id, double x, double y) {
-    cells_[cell_index(cell_coord(x), cell_coord(y))].push_back(id);
+    cells_[cell_index(cell_coord_x(x), cell_coord_y(y))].push_back(id);
   }
 
   const std::vector<int> &cell(int index) const { return cells_[index]; }
@@ -56,6 +66,8 @@ public:
 
 private:
   double L_;
-  int M_;
+  double W_;
+  int Mx_;
+  int My_;
   std::vector<std::vector<int>> cells_;
 };

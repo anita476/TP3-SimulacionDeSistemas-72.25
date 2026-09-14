@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.16)
 
 project(EventDriven-TP3 LANGUAGES CXX)
 
+enable_testing()
+
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
@@ -27,4 +29,3 @@ add_executable(EventDrivenSim
 
 target_include_directories(EventDrivenSim PRIVATE src/utils/include)
 target_link_libraries(EventDrivenSim PRIVATE argparse)
-

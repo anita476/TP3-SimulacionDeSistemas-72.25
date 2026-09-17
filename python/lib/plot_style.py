@@ -1,11 +1,10 @@
 """Estilo académico para las figuras del TP3.
 
-Guía de presentaciones: sin título interno, ejes en palabras, fuente ≥ 20,
+Guía de presentaciones: sin título interno, ejes en palabras, fuente >= 20,
 notación 10^{n} y puntos visibles. Paleta Wong (Nature Methods 8, 441, 2011).
 La leyenda va adentro si no tapa datos; si no, debajo de los ejes.
 """
 
-import csv
 from pathlib import Path
 
 import matplotlib
@@ -23,16 +22,12 @@ ORANGE = "#E69F00"
 SERIES = (BLUE, VERMILLION, GREEN, PURPLE, ORANGE)
 MARKERS = ("o", "s", "D", "^", "v")
 
-_APPLIED = False
 _CORNERS = ("upper right", "upper left", "lower right", "lower left")
 _LEGEND_PAD = 0.03
 _HITS_MAX = 2
 
 
 def apply_academic_style() -> None:
-    global _APPLIED
-    if _APPLIED:
-        return
     matplotlib.rcParams.update(
         {
             "font.family": "serif",
@@ -69,7 +64,6 @@ def apply_academic_style() -> None:
             "ps.fonttype": 42,
         }
     )
-    _APPLIED = True
 
 
 def new_figure():
@@ -191,19 +185,23 @@ def save_figure(fig, path: Path) -> None:
 
 
 def load_table(path: Path, required: tuple[str, ...]) -> list[dict[str, str]]:
-    with path.open(encoding="utf-8", newline="") as stream:
-        reader = csv.DictReader(
-            (line for line in stream if line.strip() and not line.lstrip().startswith("#")),
-            delimiter=" ",
-            skipinitialspace=True,
-        )
-        if not reader.fieldnames or not set(required).issubset(reader.fieldnames):
-            raise ValueError(f"{path}: se esperaban las columnas {' '.join(required)}")
-        rows = []
-        for line_number, raw in enumerate(reader, 2):
+    rows: list[dict[str, str]] = []
+    header = None
+    with path.open(encoding="utf-8") as stream:
+        for line in stream:
+            line = line.split("#", 1)[0].strip()
+            if not line:
+                continue
+            parts = line.split()
+            if header is None:
+                header = parts
+                if not set(required).issubset(header):
+                    raise ValueError(f"{path}: se esperaban las columnas {' '.join(required)}")
+                continue
+            raw = dict(zip(header, parts))
             missing = [key for key in required if not raw.get(key)]
             if missing:
-                raise ValueError(f"{path}: falta {', '.join(missing)} en la línea {line_number}")
+                raise ValueError(f"{path}: falta {', '.join(missing)}")
             rows.append({key: raw[key] for key in required})
     if not rows:
         raise ValueError(f"{path}: no hay filas de datos")

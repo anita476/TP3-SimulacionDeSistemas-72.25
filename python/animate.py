@@ -27,15 +27,23 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import matplotlib
-import matplotlib.pyplot as plt
-from matplotlib.animation import FuncAnimation, PillowWriter
-from matplotlib.lines import Line2D
 from matplotlib.patches import Circle, Rectangle
 
-FRESH = "#0072B2"
-USED = "#D55E00"
+from plot_style import (
+    BLUE,
+    FONT_SIZE,
+    GREEN,
+    SAVE_DPI,
+    VERMILLION,
+    apply_academic_style,
+    style_axes,
+)
+
+FRESH = BLUE
+USED = VERMILLION
+GOAL = GREEN
 OBSTACLE = "#4d4d4d"
-GOAL = "#009E73"
+GIF_DPI = 100
 
 
 @dataclass
@@ -137,15 +145,22 @@ def read_traj(path: str) -> Traj:
     return Traj(header["L"], header["W"], header["d"], header["r"], n, obstacles, frames)
 
 
+def _stats_line(frame: Frame, n: int) -> str:
+    ng_w = len(str(n))
+    return f"t = {frame.t:7.3f} s    Ng = {frame.ng:{ng_w}d}    Fu = {frame.ng / n:4.2f}"
+
+
 def make_figure(traj: Traj):
-    fig, ax = plt.subplots(figsize=(8.5, 5.4))
+    apply_academic_style()
+    import matplotlib.pyplot as plt
+
+    fig, ax = plt.subplots(figsize=(10.0, 7.0))
     L, W, r = traj.L, traj.W, traj.r
     margin = max(0.04 * L, 0.04 * W, 2.0 * r)
     ax.set_xlim(-margin, L + margin)
     ax.set_ylim(-margin, W + margin)
     ax.set_aspect("equal")
-    ax.set_xlabel("x (m)")
-    ax.set_ylabel("y (m)")
+    style_axes(ax, r"posición $x$ (m)", r"posición $y$ (m)")
     ax.add_patch(Rectangle((0, 0), L, W, fill=False, edgecolor="black", lw=1.4, zorder=5))
 
     y0 = 0.5 * W - 0.5 * traj.d
@@ -162,29 +177,38 @@ def make_figure(traj: Traj):
         ax.add_patch(patch)
         patches.append(patch)
 
+    ax.plot([], [], linestyle="none", marker="o", color=FRESH, markeredgecolor="black", label="fresca")
+    ax.plot([], [], linestyle="none", marker="o", color=USED, markeredgecolor="black", label="usada")
+    ax.plot([], [], linestyle="none", marker="o", color=OBSTACLE, markeredgecolor="black", label="obstáculo")
+    ax.plot([], [], color=GOAL, lw=4.0, label="arco")
     ax.legend(
-        handles=[
-            Line2D([], [], marker="o", linestyle="", markerfacecolor=FRESH, markeredgecolor="black", label="fresca"),
-            Line2D([], [], marker="o", linestyle="", markerfacecolor=USED, markeredgecolor="black", label="usada"),
-            Line2D([], [], marker="o", linestyle="", markerfacecolor=OBSTACLE, markeredgecolor="black", label="obstáculo"),
-            Line2D([], [], color=GOAL, lw=4.0, label="arco"),
-        ],
         loc="upper center",
-        bbox_to_anchor=(0.5, -0.12),
+        bbox_to_anchor=(0.5, -0.18),
         ncol=4,
-        frameon=False,
+        frameon=True,
+        fancybox=False,
     )
-    title = ax.set_title("", fontsize=12, pad=10)
+
+    fig.subplots_adjust(left=0.14, right=0.98, bottom=0.22, top=0.88)
+    stats = fig.text(
+        0.5,
+        0.96,
+        _stats_line(traj.frames[0], traj.n),
+        ha="center",
+        va="top",
+        fontsize=FONT_SIZE,
+        fontfamily="DejaVu Sans Mono",
+    )
+    fig.canvas.draw()
+    fig.set_layout_engine("none")
 
     def draw(index: int) -> None:
         frame = traj.frames[index]
         for patch, (x, y, _vx, _vy, used) in zip(patches, frame.particles):
             patch.center = (x, y)
             patch.set_facecolor(USED if used else FRESH)
-        title.set_text(f"t = {frame.t:.3f} s    Ng = {frame.ng}    Fu = {frame.ng / traj.n:.2f}")
+        stats.set_text(_stats_line(frame, traj.n))
 
-    draw(0)
-    fig.tight_layout()
     return fig, draw
 
 
@@ -203,6 +227,8 @@ def main() -> None:
         args.show = True
     if not args.show:
         matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    from matplotlib.animation import FuncAnimation, PillowWriter
 
     traj = read_traj(args.traj)
     fig, draw = make_figure(traj)
@@ -212,14 +238,19 @@ def main() -> None:
         draw(n_frames // 2)
         png_path = Path(args.png)
         png_path.parent.mkdir(parents=True, exist_ok=True)
-        fig.savefig(png_path, dpi=150)
+        fig.savefig(png_path, dpi=SAVE_DPI, facecolor="white")
         print(f"se escribió {png_path}")
 
     if args.out:
         gif_path = Path(args.out)
         gif_path.parent.mkdir(parents=True, exist_ok=True)
         anim = FuncAnimation(fig, draw, frames=n_frames, blit=False, interval=1000 / args.fps)
-        anim.save(gif_path, writer=PillowWriter(fps=args.fps))
+        anim.save(
+            gif_path,
+            writer=PillowWriter(fps=args.fps),
+            dpi=GIF_DPI,
+            savefig_kwargs={"facecolor": "white"},
+        )
         print(f"se escribió {gif_path} ({n_frames} cuadros)")
 
     if args.show:

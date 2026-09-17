@@ -11,7 +11,7 @@ import argparse
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "lib"))
 
 from plot_style import BLUE, VERMILLION, load_table, new_figure, place_legend_below, save_figure, style_axes
 

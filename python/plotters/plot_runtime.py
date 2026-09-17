@@ -1,4 +1,4 @@
-"""1.1: tiempo de ejecución promedio vs N (mesa vacía, ≥ 10 realizaciones).
+"""1.1: tiempo de ejecución promedio vs N (mesa vacía, >= 10 realizaciones).
 
     python python/plotters/plot_runtime.py --input times.txt --output figura.png
 
@@ -10,7 +10,7 @@ import argparse
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "lib"))
 
 from plot_style import BLUE, load_table, new_figure, save_figure, style_axes
 

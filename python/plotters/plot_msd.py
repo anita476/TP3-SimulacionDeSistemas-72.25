@@ -11,24 +11,10 @@ import argparse
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "lib"))
 
 from plot_style import BLUE, VERMILLION, apply_sci_axis, load_table, new_figure, place_legend_below, save_figure, style_axes
-
-# ⟨Δr²⟩ = 2 d D t con d = 2.
-_DIM = 2
-
-
-def _fit_line(xs: list[float], ys: list[float]) -> tuple[float, float]:
-    n = len(xs)
-    mean_x = sum(xs) / n
-    mean_y = sum(ys) / n
-    var_x = sum((x - mean_x) ** 2 for x in xs)
-    if var_x == 0:
-        raise ValueError("no hay variación en t para ajustar")
-    cov = sum((x - mean_x) * (y - mean_y) for x, y in zip(xs, ys))
-    slope = cov / var_x
-    return slope, mean_y - slope * mean_x
+from metrics import diffusion, fit_line
 
 
 def main() -> None:
@@ -41,8 +27,9 @@ def main() -> None:
 
     try:
         rows = load_table(args.input, ("t", "msd"))
-        times = [float(row["t"]) for row in rows]
-        msds = [float(row["msd"]) for row in rows]
+        pairs = sorted(((float(row["t"]), float(row["msd"])) for row in rows), key=lambda item: item[0])
+        times = [t for t, _msd in pairs]
+        msds = [msd for _t, msd in pairs]
         fit_t, fit_msd = [], []
         for t, msd in zip(times, msds):
             if args.t_min is not None and t < args.t_min:
@@ -51,14 +38,12 @@ def main() -> None:
                 continue
             fit_t.append(t)
             fit_msd.append(msd)
-        if len(fit_t) < 2:
-            raise ValueError("la ventana de ajuste necesita al menos 2 puntos")
-        slope, intercept = _fit_line(fit_t, fit_msd)
+        slope, intercept = fit_line(fit_t, fit_msd)
     except (OSError, ValueError) as error:
         parser.error(str(error))
 
-    diffusion = slope / (2 * _DIM)
-    print(f"D = {diffusion:.6g} m^2/s  (pendiente / {2 * _DIM})")
+    d = diffusion(slope)
+    print(f"D = {d:.6g} m^2/s  (pendiente / 4)")
 
     fig, ax = new_figure()
     ax.plot(times, msds, color=BLUE, marker="o", linestyle="none", markeredgecolor="black", markeredgewidth=0.6, zorder=3, label="DCM")
@@ -68,7 +53,7 @@ def main() -> None:
         [intercept + slope * t0, intercept + slope * t1],
         color=VERMILLION,
         zorder=4,
-        label=rf"$D={diffusion:.3g}\,\mathrm{{m}}^2/\mathrm{{s}}$",
+        label=rf"$D={d:.3g}\,\mathrm{{m}}^2/\mathrm{{s}}$",
     )
     style_axes(ax, "tiempo (s)", r"desplazamiento cuadrático medio (m$^2$)")
     ax.set_ylim(bottom=0)

@@ -1,5 +1,6 @@
 #pragma once
 
 struct Particle {
-  double x, y, r, theta;
+  double x, y, r, vx, vy;
+  int used;
 };

@@ -76,3 +76,13 @@ Testing/
 .venv 
 __pycache__
 .log
+
+# Dumps del motor y animaciones
+data/
+*.txt
+!python/requirements.txt
+!configs/*.txt
+*.gif
+*.mp4
+*.png
+*.webp

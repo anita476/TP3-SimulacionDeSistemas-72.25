@@ -21,11 +21,42 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(argparse)
 
-add_executable(EventDrivenSim
-    src/main.cpp
+# -------------------------
+# Core simulation library
+# -------------------------
+
+add_library(sim_core
     src/utils/neighbours.cpp
+    src/utils/collision.cpp
 )
 
+target_include_directories(sim_core PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/include
+)
 
-target_include_directories(EventDrivenSim PRIVATE src/utils/include)
-target_link_libraries(EventDrivenSim PRIVATE argparse)
+# -------------------------
+# Main executable
+# -------------------------
+
+add_executable(EventDrivenSim
+    src/main.cpp
+)
+
+target_link_libraries(EventDrivenSim PRIVATE
+    sim_core
+    argparse
+)
+
+# -------------------------
+# Tests
+# -------------------------
+
+# Each tests/test_*.cpp is a standalone executable
+file(GLOB TEST_SOURCES CONFIGURE_DEPENDS tests/test_*.cpp)
+foreach(test_src ${TEST_SOURCES})
+    get_filename_component(name ${test_src} NAME_WE)
+    add_executable(${name} ${test_src})
+    target_include_directories(${name} PRIVATE tests)
+    target_link_libraries(${name} PRIVATE sim_core)
+    add_test(NAME ${name} COMMAND ${name})
+endforeach()

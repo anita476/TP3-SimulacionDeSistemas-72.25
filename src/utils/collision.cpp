@@ -46,5 +46,31 @@ double obstacle_time(const Particle &p, const Obstacle &o) {
 
 void bounce_x(Particle &p) {p.vx = -p.vx;}
 void bounce_y(Particle &p) {p.vy = -p.vy;}
-void collide_pair(Particle &, Particle &) {}
-void collide_obstacle(Particle &, const Obstacle &) {}
+
+
+void collide_pair(Particle &a, Particle &b) {
+    const double dx = b.x - a.x, dy = b.y - a.y;
+    const double dvx = b.vx - a.vx, dvy = b.vy - a.vy;
+    const double sigma = a.r + b.r;
+    const double dv_dr = dvx * dx + dvy * dy;
+
+    const double J = 2.0 * a.m * b.m * dv_dr / (sigma * (a.m + b.m));
+    const double Jx = J * dx / sigma, Jy = J * dy / sigma;
+
+    a.vx += Jx / a.m;
+    a.vy += Jy / a.m;
+    b.vx -= Jx / b.m;
+    b.vy -= Jy / b.m;
+}
+
+// v' = v - 2(v*n)*n
+void collide_obstacle(Particle &p, const Obstacle &o) {
+    double nx = p.x - o.kx, ny = p.y - o.ky;
+    const double norm = std::sqrt(nx*nx + ny*ny);
+    nx /= norm;
+    ny /= norm;
+
+    const double vn = p.vx * nx + p.vy * ny;
+    p.vx -= 2.0 * vn * nx;
+    p.vy -= 2.0 * vn * ny;
+}

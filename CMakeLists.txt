@@ -29,6 +29,7 @@ add_library(sim_core STATIC
     src/utils/neighbours.cpp
     src/utils/collision.cpp
     src/utils/obstacle.cpp
+    src/utils/generator.cpp
 )
 
 target_include_directories(sim_core PUBLIC
@@ -62,3 +63,4 @@ endfunction()
 
 sim_test(test_collision)
 sim_test(test_obstacle)
+sim_test(test_generator)

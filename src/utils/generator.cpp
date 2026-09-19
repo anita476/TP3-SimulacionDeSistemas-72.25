@@ -21,9 +21,9 @@ void validate(const GeneratorConfig &cfg) {
     if (cfg.L <= 2.0 * cfg.r || cfg.W <= 2.0 * cfg.r) throw std::invalid_argument("la mesa es más chica que el diámetro de la partícula");
 }
 
-
-// 3x3 block of cells around candidates scanned (same as TP2)
-// enough because cell side is at least 2*r
+// Check the candidate's cell and its 8 neighbours.
+// cim_grid_dimensions() guarantees cell width and height >= 2*r,
+// so any particle that could overlap the candidate must be in this 3x3 block.
 bool overlaps_placed(double x, double y, double r, const std::vector<Particle> &placed, const CellGrid &grid){
     const int cx = grid.cell_coord_x(x), cy = grid.cell_coord_y(y);
     for (int dy = -1; dy <=1; ++dy) {
@@ -38,9 +38,9 @@ bool overlaps_placed(double x, double y, double r, const std::vector<Particle> &
     return false;
 }
 
-// there aren't as many obstacles and they are bigger than particles
-// so they might not be enough for 3x3
-// brute force instead
+// Obstacles may be larger than particles, so the particle-sized 3x3
+// neighbourhood is not sufficient for obstacle checks.
+// There are few obstacles, so check them all directly.
 bool overlaps_obstacle(double x, double y, double r, const std::vector<Obstacle> &obstacles) {
     for (const Obstacle &o : obstacles)
         if (discs_overlap(x - o.kx, y - o.ky, r + o.Rk)) return true;
@@ -89,11 +89,12 @@ std::vector<Particle> generate_particles(const GeneratorConfig &cfg, GeneratorSt
 
         if (!placed){
             std::ostringstream msg;
-            msg << "no se pudo ubicar la partícula " << i + 1 << " de " << cfg.N
-            << " tras " << cfg.max_attempts << " intentos (fracción ocupada "
-            << (obstacle_area + i * disc_area) / table_area
-            << "; el agregado secuencial al azar se traba cerca de 0.55): "
-            "bajar N o el área de los obstáculos";
+            msg << "no se pudo ubicar la partícula " << i + 1 
+                << " de " << cfg.N
+                << " tras " << cfg.max_attempts 
+                << " intentos (fracción ocupada "
+                << (obstacle_area + i * disc_area) / table_area
+                << "): bajar N, reducir los obstáculos o aumentar max_attempts";
             throw std::runtime_error(msg.str());
         }
     }

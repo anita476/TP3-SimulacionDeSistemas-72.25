@@ -20,7 +20,8 @@ struct GeneratorStats {
     int mx = 0, my = 0;
     double packing_fraction = 0.0;
 };
-// N non-overlapping particles with |v|=v0 at a uniform angle between [0, 2pi)
+
+// Generates particles assuming cfg.obstacles has already been validated.
 // throws: runtime_error if particle does not fit after max_attempts tries
 std::vector<Particle> generate_particles(const GeneratorConfig &cfg, GeneratorStats *stats = nullptr);
 

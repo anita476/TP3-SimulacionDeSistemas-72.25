@@ -35,13 +35,19 @@ python/lib/          dump, métricas, estilo de figuras
 python/plotters/     figuras 1.1–1.3
 ```
 
-## USO INTERNO - completed so far
+# USO INTERNO - completed so far
 
-1. Collision.hpp + collision.cpp for collision prediction (between particle & wall, 2 particles, particle & obstacle) AND velocities after collision (with formulas from class - dont ask me to derive formulas, im only doing what was presented in class heh)
+1. Collision.hpp/.cpp: collision *times* (particle-wall, particle-particle, particle-obstacle -> obstacle == resting particle) AND post-collision *velocities* (wall bounce, with impulse, and obstacle reflection v'=v-2(v*n)*n [formulas as presented in class]
 
-2. TESTS
+2. Obstacle.hpp/.cpp: reads config file (one 'xk yk Rk' line per obstacle) and validates: 1. Rk >= r, 2. no overlap between obstacles (exactly touching is fine), 3. fully inside the table (touching wall is fine)
+
+3. Geometry.hpp: added discs_overlap and disc_inside inside 
+
+4. TESTS
 - One test for different types of collisions and whether it detects properly the collisions
+- Test for obstacles 
 
 TO BUILD AND RUN THE TEST:
 `cmake --build build -j && ctest --test-dir build --output-on-failure`
-Should output: 100% tests passed, 0 tests failed out of 1
+Should output: 100% tests passed
+

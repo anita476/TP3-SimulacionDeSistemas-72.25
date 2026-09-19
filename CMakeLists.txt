@@ -25,9 +25,10 @@ FetchContent_MakeAvailable(argparse)
 # Core simulation library
 # -------------------------
 
-add_library(sim_core
+add_library(sim_core STATIC
     src/utils/neighbours.cpp
     src/utils/collision.cpp
+    src/utils/obstacle.cpp
 )
 
 target_include_directories(sim_core PUBLIC
@@ -52,11 +53,12 @@ target_link_libraries(EventDrivenSim PRIVATE
 # -------------------------
 
 # Each tests/test_*.cpp is a standalone executable
-file(GLOB TEST_SOURCES CONFIGURE_DEPENDS tests/test_*.cpp)
-foreach(test_src ${TEST_SOURCES})
-    get_filename_component(name ${test_src} NAME_WE)
-    add_executable(${name} ${test_src})
+function(sim_test name)
+    add_executable(${name} tests/${name}.cpp)
     target_include_directories(${name} PRIVATE tests)
     target_link_libraries(${name} PRIVATE sim_core)
     add_test(NAME ${name} COMMAND ${name})
-endforeach()
+endfunction()
+
+sim_test(test_collision)
+sim_test(test_obstacle)

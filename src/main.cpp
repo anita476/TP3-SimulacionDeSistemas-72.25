@@ -8,6 +8,8 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <cmath>
+#include <filesystem>
 
 #include "generator.hpp"
 #include "obstacle.hpp"
@@ -26,6 +28,106 @@ std::ofstream open_dump(const std::string &path) {
     if (!file) throw std::runtime_error("could not open " + path);
     file << std::setprecision(12);
     return file;
+}
+
+void print_summary(
+    const Simulation& sim,
+    const SimParams& params,
+    const GeneratorConfig& gen,
+    const GeneratorStats& gen_stats,
+    const std::string& out_path,
+    double initial_energy,
+    double final_energy,
+    double init_seconds,
+    double loop_seconds)
+{
+    const SimStats& stats = sim.stats();
+    constexpr double kMillisecondsPerSecond = 1000.0;
+
+    std::cout << std::fixed
+              << "\nConfiguration\n"
+              << "  Particles:                " << gen.N << '\n'
+              << "  Obstacles:                " << gen.obstacles.size() << '\n'
+              << "  Random seed:              " << gen.seed << '\n'
+              << std::setprecision(3)
+              << "  Maximum simulated time:   " << params.tmax << " s\n"
+              << std::setprecision(2)
+              << "  Occupied area:            "
+              << 100.0 * gen_stats.packing_fraction << "%\n";
+
+    if (out_path.empty()) {
+        std::cout << "  Trajectory output:        disabled\n";
+    } else {
+        std::cout << "  Trajectory file:          " << out_path << '\n';
+
+        if (params.k == 0) {
+            std::cout << "  Frames:                   initial state and goals\n";
+        } else {
+            std::cout << "  Frames:                   initial state, every "
+                      << params.k << " physical collisions, and goals\n";
+        }
+    }
+
+    std::cout << "\nSimulation results\n"
+              << std::setprecision(6)
+              << "  Final simulated time:     " << sim.time() << " s\n"
+              << "  Particles that scored:    "
+              << sim.goals() << " / " << gen.N
+              << std::setprecision(1)
+              << " (" << 100.0 * sim.goals() / gen.N << "%)\n";
+
+    if (sim.t90() < 0.0) {
+        std::cout << "  Time to 90% scored:       not reached\n";
+    } else {
+        std::cout << std::setprecision(6)
+                  << "  Time to 90% scored:       " << sim.t90() << " s\n";
+    }
+
+    std::cout << "\nPhysical collisions\n"
+              << "  Total:                    " << sim.events() << '\n'
+              << "  Particle-particle:        " << stats.pair_events << '\n'
+              << "  Particle-wall:            " << stats.wall_events << '\n'
+              << "  Particle-obstacle:        " << stats.obstacle_events << '\n';
+
+    // std::cout << "\nEnergy\n"
+    //           << std::setprecision(12)
+    //           << "  Initial:                  " << initial_energy << " J\n"
+    //           << "  Final:                    " << final_energy << " J\n";
+
+    // // Relative drift is undefined when the initial energy is zero.
+    // if (initial_energy > 0.0) {
+    //     const double relative_drift =
+    //         std::fabs(final_energy - initial_energy) / initial_energy;
+
+    //     std::cout << std::scientific << std::setprecision(3)
+    //               << "  Relative energy drift:    " << relative_drift << '\n';
+    // } else {
+    //     std::cout << "  Relative energy drift:    undefined (initial energy is zero)\n"
+    //               << std::scientific << std::setprecision(3)
+    //               << "  Absolute energy change:   "
+    //               << std::fabs(final_energy - initial_energy) << " J\n";
+    // }
+
+    std::cout << "\nEvent queue diagnostics\n"
+              << "  Stale events discarded:   " << stats.discarded << '\n'
+              << "  Zero-time events:         " << stats.zero_dt << '\n'
+              << "  Peak queue entries:       " << stats.max_queue << '\n';
+
+    std::cout << "\nExecution time\n"
+              << std::fixed << std::setprecision(3)
+              << "  Initialization:           "
+              << init_seconds * kMillisecondsPerSecond << " ms\n"
+              << "  Event processing:         "
+              << loop_seconds * kMillisecondsPerSecond << " ms\n"
+              << "  Total engine:             "
+              << (init_seconds + loop_seconds) * kMillisecondsPerSecond
+              << " ms\n";
+
+    if (!out_path.empty()) {
+        std::cout << "  Event processing includes trajectory writes during run().\n";
+    }
+
+    std::cout << std::defaultfloat << std::setprecision(6);
 }
 
 }
@@ -91,11 +193,8 @@ int main(int argc, char *argv[]) {
 
         std::ofstream file;
         std::ostream *out = nullptr;
-        const std::string out_path = program.get<std::string>("--out");
         if (!out_path.empty()) {
-            file.open(out_path);
-            if (!file) throw std::runtime_error("Couldn't open " + out_path);
-            file << std::setprecision(12);
+            file = open_dump(out_path);
             out = &file;
         }
 
@@ -110,29 +209,16 @@ int main(int argc, char *argv[]) {
         const double e_end = sim.kinetic_energy();
         const SimStats &st = sim.stats();
 
-        std::cout << std::setprecision(10)
-            << "N " << N << '\n'
-            << "K " << obstacles.size() << '\n'
-            << "seed " << seed << '\n'
-            << "tmax " << tmax << '\n'
-            << "k " << k << '\n'
-            << "packing " << gen_stats.packing_fraction << '\n'
-            << "events " << sim.events() << '\n'
-            << "wall_events " << st.wall_events << '\n'
-            << "obstacle_events " << st.obstacle_events << '\n'
-            << "pair_events " << st.pair_events << '\n'
-            << "discarded " << st.discarded << '\n'
-            << "zero_dt " << st.zero_dt << '\n'
-            << "max_queue " << st.max_queue << '\n'
-            << "t_end " << sim.time() << '\n'
-            << "Ng " << sim.goals() << '\n'
-            << "t90 " << sim.t90() << '\n'
-            << "E0 " << e0 << '\n'
-            << "E_end " << e_end << '\n'
-            << "energy_drift " << std::fabs(e_end - e0) / e0 << '\n'
-            << "init_seconds " << init_seconds << '\n'
-            << "loop_seconds " << loop_seconds << '\n'
-            << "engine_seconds " << init_seconds + loop_seconds << '\n';
+        print_summary(
+            sim,
+            params,
+            gen,
+            gen_stats,
+            out_path,
+            e0,
+            e_end,
+            init_seconds,
+            loop_seconds);
 
     } catch (const std::exception &err) {
         std::cerr << "error: " << err.what() << '\n';

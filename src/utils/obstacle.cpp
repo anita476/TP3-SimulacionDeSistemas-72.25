@@ -17,7 +17,6 @@ std::vector<Obstacle> read_obstacles(const std::string &path) {
     std::string line;
     int lineno = 0;
     while (std::getline(in, line)) {
-        if (in.bad()) throw std::runtime_error("Error reading " + path);
         ++lineno;
         const std::size_t hash = line.find('#');
         if (hash != std::string::npos) line.erase(hash);
@@ -42,6 +41,8 @@ std::vector<Obstacle> read_obstacles(const std::string &path) {
         };
         obstacles.push_back({to_double(tokens[0]), to_double(tokens[1]), to_double(tokens[2])});
     }
+    if (in.bad()) throw std::runtime_error("Error reading " + path);
+
     return obstacles;
 }
 

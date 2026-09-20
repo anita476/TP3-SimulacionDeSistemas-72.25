@@ -17,10 +17,21 @@ namespace {
 double seconds_since(std::chrono::steady_clock::time_point t0) { 
     return std::chrono::duration<double>(std::chrono::steady_clock::now() - t0).count();
 }
+
+// creates dump folder if it doesnt exist
+std::ofstream open_dump(const std::string &path) {
+    const std::filesystem::path parent = std::filesystem::path(path).parent_path();
+    if (!parent.empty()) std::filesystem::create_directories(parent);
+    std::ofstream file(path);
+    if (!file) throw std::runtime_error("could not open " + path);
+    file << std::setprecision(12);
+    return file;
+}
+
 }
 
 int main(int argc, char *argv[]) {
-    argparse::ArgumentParser program("EventDriven-TP3", "0.1", argparse::default_arguments::help);
+    argparse::ArgumentParser program("EventDriven-TP3", "0.2", argparse::default_arguments::help);
     
     program.add_argument("-L").default_value(1.20).scan<'g', double>().help("table length (m)");
     program.add_argument("-W").default_value(0.68).scan<'g', double>().help("table width (m)");
@@ -92,19 +103,37 @@ int main(int argc, char *argv[]) {
         const auto t_init = std::chrono::steady_clock::now();
         Simulation sim(params, std::move(particles), obstacles);
         const double init_seconds = seconds_since(t_init);
+        const double e0 = sim.kinetic_energy();
         const auto t_loop = std::chrono::steady_clock::now();
         sim.run(out);
         const double loop_seconds = seconds_since(t_loop);
+        const double e_end = sim.kinetic_energy();
+        const SimStats &st = sim.stats();
 
-        // const SimStats &st = sim.stats();
+        std::cout << std::setprecision(10)
+            << "N " << N << '\n'
+            << "K " << obstacles.size() << '\n'
+            << "seed " << seed << '\n'
+            << "tmax " << tmax << '\n'
+            << "k " << k << '\n'
+            << "packing " << gen_stats.packing_fraction << '\n'
+            << "events " << sim.events() << '\n'
+            << "wall_events " << st.wall_events << '\n'
+            << "obstacle_events " << st.obstacle_events << '\n'
+            << "pair_events " << st.pair_events << '\n'
+            << "discarded " << st.discarded << '\n'
+            << "zero_dt " << st.zero_dt << '\n'
+            << "max_queue " << st.max_queue << '\n'
+            << "t_end " << sim.time() << '\n'
+            << "Ng " << sim.goals() << '\n'
+            << "t90 " << sim.t90() << '\n'
+            << "E0 " << e0 << '\n'
+            << "E_end " << e_end << '\n'
+            << "energy_drift " << std::fabs(e_end - e0) / e0 << '\n'
+            << "init_seconds " << init_seconds << '\n'
+            << "loop_seconds " << loop_seconds << '\n'
+            << "engine_seconds " << init_seconds + loop_seconds << '\n';
 
-        std::cout << std::setprecision(12) << "N " << gen.N << "\npacking " << gen_stats.packing_fraction
-        <<"\nevents " << sim.events()
-        <<"\nt_end " << sim.time()
-        <<"\nNg " << sim.goals()
-        <<"\nt90 " << sim.t90()
-        << "\ninit_seconds " << init_seconds << "\nloop_seconds " << loop_seconds
-        << "\nengine_seconds " << init_seconds + loop_seconds << '\n';
     } catch (const std::exception &err) {
         std::cerr << "error: " << err.what() << '\n';
         return 1;

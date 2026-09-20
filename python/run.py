@@ -137,20 +137,6 @@ def append_row(path: Path, header: str, line: str) -> None:
         file.write(line + "\n")
 
 
-def git_rev() -> str:
-    try:
-        result = subprocess.run(
-            ["git", "rev-parse", "--short", "HEAD"],
-            cwd=ROOT,
-            capture_output=True,
-            text=True,
-            check=True,
-        )
-        return result.stdout.strip()
-    except (OSError, subprocess.CalledProcessError):
-        return "desconocido"
-
-
 def print_run_summary(
     summary: dict[str, str],
     seed: int,
@@ -344,7 +330,6 @@ def main() -> None:
 
     (outdir / "params.txt").write_text(
         f"# {datetime.now().astimezone().isoformat(timespec='seconds')}\n"
-        f"git {git_rev()}\n"
         f"exe {args.exe}\n"
         f"N {n}\n"
         f"r {args.r}\n"

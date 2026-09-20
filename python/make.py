@@ -160,6 +160,32 @@ def _step_anim(data: Path) -> None:
         str(data / "sample.png"),
     )
 
+def run_folders_nested(root: Path) -> list[Path]:
+    """Familias: subcarpetas de root que a su vez contienen carpetas con dumps."""
+    if not root.is_dir():
+        return []
+    return sorted(p for p in root.iterdir() if p.is_dir() and run_folders(p))
+
+def _step_fu(data: Path) -> None:
+    series: list[tuple[str, Path]] = []
+    empty = data / "runs" / "empty"
+    if dump_paths(empty):
+        series.append(("mesa vacía", empty))
+    best = None  # carpeta con menor <t90> entre todas las familias
+    for family in run_folders_nested(data / "runs" / "t90"):
+        for folder in run_folders(family):
+            mean, _std, _ng, reached = t90_summary(read_realizations(folder))
+            if reached and (best is None or mean < best[0]):
+                best = (mean, folder)
+    if best is not None:
+        series.append((f"{best[1].parent.name} = {best[1].name}", best[1]))
+    if not series:
+        print("se omite Fu(t): no hay data/runs/empty ni data/runs/t90")
+        return
+    args = ["--output", str(data / "fu.png")]
+    for label, folder in series:
+        args += ["--series", label, str(folder)]
+    _run(HERE / "plotters" / "plot_fu.py", *args)
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -175,6 +201,7 @@ def main() -> None:
         _step_t90(data, args.xlabel)
         _step_msd(data, args.t_min, args.t_max)
         _step_d_vs_t90(data, args.t_min, args.t_max)
+        _step_fu(data)
         _step_anim(data)
     except (OSError, ValueError) as error:
         sys.exit(str(error))

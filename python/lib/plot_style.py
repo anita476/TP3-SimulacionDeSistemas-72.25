@@ -10,6 +10,8 @@ from pathlib import Path
 import matplotlib
 from matplotlib.collections import LineCollection, PathCollection
 
+from tables import load_table
+
 FONT_SIZE = 20
 FIGURE_SIZE = (6.5, 5.4)
 SAVE_DPI = 300
@@ -184,25 +186,3 @@ def save_figure(fig, path: Path) -> None:
     print(f"se escribió {path}")
 
 
-def load_table(path: Path, required: tuple[str, ...]) -> list[dict[str, str]]:
-    rows: list[dict[str, str]] = []
-    header = None
-    with path.open(encoding="utf-8") as stream:
-        for line in stream:
-            line = line.split("#", 1)[0].strip()
-            if not line:
-                continue
-            parts = line.split()
-            if header is None:
-                header = parts
-                if not set(required).issubset(header):
-                    raise ValueError(f"{path}: se esperaban las columnas {' '.join(required)}")
-                continue
-            raw = dict(zip(header, parts))
-            missing = [key for key in required if not raw.get(key)]
-            if missing:
-                raise ValueError(f"{path}: falta {', '.join(missing)}")
-            rows.append({key: raw[key] for key in required})
-    if not rows:
-        raise ValueError(f"{path}: no hay filas de datos")
-    return rows

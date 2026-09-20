@@ -21,21 +21,11 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE / "lib"))
 
-from metrics import diffusion, fit_line, mean_std, msd_series, t90
+from metrics import diffusion, fit_line, mean_std, msd_series
+from runs import dump_paths, read_realizations, run_folders, t90_summary
 from traj import read_traj
 
 ROOT = HERE.parent
-
-
-def _dirs_with_txt(root: Path) -> list[Path]:
-    if not root.is_dir():
-        return []
-    return sorted(p for p in root.iterdir() if p.is_dir() and any(p.glob("*.txt")))
-
-
-def _txts(path: Path) -> list[Path]:
-    return sorted(p for p in path.glob("*.txt") if p.is_file())
-
 
 def _write_table(path: Path, header: str, lines: list[str]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -98,8 +88,8 @@ def _step_runtime(data: Path) -> None:
 def _step_t90(data: Path, xlabel: str) -> None:
     table = data / "t90.txt"
     rows = []
-    for folder in _dirs_with_txt(data / "runs" / "t90"):
-        mean, std = mean_std([t90(read_traj(path)) for path in _txts(folder)])
+    for folder in run_folders(data / "runs" / "t90"):
+        mean, std, _ng, _reached = t90_summary(read_realizations(folder))
         rows.append((float(folder.name), folder.name, mean, std))
     if rows:
         rows.sort()
@@ -113,11 +103,10 @@ def _step_t90(data: Path, xlabel: str) -> None:
         return
     args = ["--input", str(table), "--output", str(data / "t90.png"), "--xlabel", xlabel]
     empty_dir = data / "runs" / "empty"
-    empty_paths = _txts(empty_dir)
-    if empty_paths:
-        mean, std = mean_std([t90(read_traj(path)) for path in empty_paths])
+    empty_reals = read_realizations(empty_dir) if dump_paths(empty_dir) else []
+    if empty_reals:
+        mean, std, _ng, _reached = t90_summary(empty_reals)
         args.extend(["--empty", str(mean), str(std)])
-    _run(HERE / "plotters" / "plot_t90.py", *args)
 
 
 def _step_msd(data: Path, t_min: float | None, t_max: float | None) -> None:

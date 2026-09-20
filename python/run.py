@@ -10,7 +10,10 @@ Ejemplos:
     una copia de los obstáculos. Permite realizaciones en paralelo.
 
 --wall:
-    Guarda filas "N time", donde time es engine_seconds.
+    Guarda filas "N events wall_events pair_events time": eventos procesados en
+    tmax (total, contra paredes y entre partículas) y engine_seconds
+    (construcción de la cola inicial + loop de eventos; sin generación de la
+    condición inicial ni escritura de archivos).
     Ejecuta secuencialmente y sin dumps para comparar tiempos.
 
 El motor debe admitir --raw y emitir su resumen como líneas "clave valor".
@@ -234,7 +237,7 @@ def main() -> None:
     mode.add_argument("--outdir", type=Path, help="carpeta de dumps")
     mode.add_argument(
         "--wall", type=Path,
-        help="archivo N time; sin dumps y secuencial",
+        help="archivo N events wall_events pair_events time; sin dumps y secuencial",
     )
     
     parser.add_argument(
@@ -288,8 +291,9 @@ def main() -> None:
 
                 append_row(
                     args.wall,
-                    "N time",
-                    f"{n} {summary['engine_seconds']}",
+                    "N events wall_events pair_events time",
+                    f"{n} {summary['events']} {summary['wall_events']} {summary['pair_events']} "
+                    f"{summary['engine_seconds']}",
                 )
 
                 print(

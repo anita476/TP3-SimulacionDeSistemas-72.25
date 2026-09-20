@@ -4,6 +4,7 @@
     W <m>
     d <m>
     r <m>
+    m <kg>                    opcional; permite calcular E(t) desde los cuadros
     N <int>
     O <xk> <yk> <Rk>          cero o más obstáculos
     t <s> Ng <int>
@@ -35,6 +36,8 @@ class Traj:
     n: int
     obstacles: list[tuple[float, float, float]]
     frames: list[Frame]
+    m: float | None = None
+
 
 
 def _fail(path: str, lineno: int, msg: str) -> None:
@@ -66,7 +69,7 @@ def read_traj(path: str | Path) -> Traj:
     while i < len(rows) and rows[i][1].split()[0] != "t":
         lineno, line = rows[i]
         tag = line.split()[0]
-        if tag in ("L", "W", "d", "r"):
+        if tag in ("L", "W", "d", "r", "m"):
             header[tag] = float(_tokens(path_s, lineno, line, 2)[1])
         elif tag == "N":
             n = int(_tokens(path_s, lineno, line, 2)[1])
@@ -78,6 +81,7 @@ def read_traj(path: str | Path) -> Traj:
         i += 1
 
     missing = [key for key in ("L", "W", "d", "r") if key not in header]
+    if "m" in header and header["m"] <= 0: raise ValueError(f"{path_s}: m must be > 0, but is {header['m']}")
     if n is None:
         missing.append("N")
     if missing:
@@ -116,4 +120,4 @@ def read_traj(path: str | Path) -> Traj:
     if not frames:
         raise ValueError(f"{path_s}: no hay cuadros")
 
-    return Traj(header["L"], header["W"], header["d"], header["r"], n, obstacles, frames)
+    return Traj(header["L"], header["W"], header["d"], header["r"], n, obstacles, frames, header.get("m"))

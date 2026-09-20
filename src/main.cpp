@@ -149,6 +149,8 @@ int main(int argc, char *argv[]) {
     program.add_argument("-seed").default_value(1).scan<'i', int>().help("RNG seed");
     program.add_argument("-obstacles").default_value(std::string("")).help("obstacle file: one 'xk yk Rk' line per obstacle (m)");
     program.add_argument("--out").default_value(std::string("")).help("dump path (empty = no dump)");
+
+    program.add_argument("--raw").default_value(false).implicit_value(true).help("print key-value summary for scripts");
     
 
     try {
@@ -209,16 +211,45 @@ int main(int argc, char *argv[]) {
         const double e_end = sim.kinetic_energy();
         const SimStats &st = sim.stats();
 
+        if (program.get<bool>("--raw")) {
+        const SimStats& st = sim.stats();
+
+        std::cout << std::defaultfloat << std::setprecision(17)
+                << "N " << N << '\n'
+                << "K " << obstacles.size() << '\n'
+                << "seed " << seed << '\n'
+                << "tmax " << tmax << '\n'
+                << "k " << k << '\n'
+                << "packing " << gen_stats.packing_fraction << '\n'
+                << "events " << sim.events() << '\n'
+                << "wall_events " << st.wall_events << '\n'
+                << "obstacle_events " << st.obstacle_events << '\n'
+                << "pair_events " << st.pair_events << '\n'
+                << "discarded " << st.discarded << '\n'
+                << "zero_dt " << st.zero_dt << '\n'
+                << "max_queue " << st.max_queue << '\n'
+                << "t_end " << sim.time() << '\n'
+                << "Ng " << sim.goals() << '\n'
+                << "t90 " << sim.t90() << '\n'
+                << "E0 " << e0 << '\n'
+                << "E_end " << e_end << '\n';
+
+        if (e0 > 0.0) {
+            std::cout << "energy_drift "
+                    << std::fabs(e_end - e0) / e0 << '\n';
+        } else {
+            // Relative drift is undefined for zero initial energy.
+            std::cout << "energy_drift nan\n";
+        }
+
+        std::cout << "init_seconds " << init_seconds << '\n'
+                << "loop_seconds " << loop_seconds << '\n'
+                << "engine_seconds " << init_seconds + loop_seconds << '\n';
+    } else {
         print_summary(
-            sim,
-            params,
-            gen,
-            gen_stats,
-            out_path,
-            e0,
-            e_end,
-            init_seconds,
-            loop_seconds);
+            sim, params, gen, gen_stats, out_path,
+            e0, e_end, init_seconds, loop_seconds);
+    }
 
     } catch (const std::exception &err) {
         std::cerr << "error: " << err.what() << '\n';

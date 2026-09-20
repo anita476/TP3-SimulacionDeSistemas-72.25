@@ -1,53 +1,228 @@
-# TP3 — Simulación dirigida por eventos
+# TP3 — Simulación dirigida por eventos: Billar-Metegol
 
 Integrantes: Camila Lee, Matías Leporini, Ana Negre
 
-## Motor
+## Requisitos y compilación
+
+Ejecutar desde la raíz del proyecto:
 
 ```bash
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release && cmake --build build -j
+
+python3 -m pip install -r python/requirements.txt
 ```
 
-## Figuras
+## Configuración de la simulación
+
+### Parámetros del sistema
+
+| Parámetro | Valor predeterminado | Descripción |
+|---|---|---|
+| `-L` | `1.20` | Largo de la mesa (m) |
+| `-W` | `0.68` | Ancho de la mesa (m) |
+| `-d` | `0.20` | Ancho de cada arco, centrado en las paredes cortas (m) |
+| `-N` | `100` | Cantidad de partículas |
+| `-r` | `0.0175` | Radio de las partículas (m) |
+| `-m` | `0.025` | Masa de cada partícula (kg) |
+| `-v0` | `1.0` | Rapidez inicial (m/s) |
+| `-tmax` | `30` | Tiempo simulado máximo (s) |
+| `-k` | `200` | Frecuencia de guardado: cada k colisiones físicas |
+| `-seed` | `1` | Semilla del generador |
+| `-obstacles` | — | Archivo de configuración de obstáculos |
+| `--out` | — | Archivo de trayectoria; crea la carpeta si hace falta |
+| `--raw` | desactivado | Resumen en formato `clave valor` para scripts |
+
+Con `-k 0` se guardan únicamente el estado inicial y los goles.
+Con `-k > 0` se guardan además cuadros cada k colisiones físicas.
+
+### Configuración de obstáculos
+
+Cada línea contiene las coordenadas del centro y el radio, en metros:
+```text
+0.60 0.34 0.05
+0.30 0.20 0.02
+```
+El lector admite líneas vacías y comentarios con `#`.
+Los obstáculos deben satisfacer las restricciones geométricas
+implementadas en `validate_obstacles()` - R_k >= r y dentro de la mesa.
+
+## Ejecución de la simulación
+
+### Una realización
 
 ```bash
-pip install -r python/requirements.txt
-python python/make.py
+./build/EventDrivenSim \
+    -N 100 \
+    -tmax 100 \
+    -k 100 \
+    -seed 1 \
+    -obstacles configs/obstacles_test.txt \
+    --out data/run.txt
 ```
 
-Dumps en `data/` (lo que falte se omite):
+Para simular una mesa sin obstáculos, omitir `-obstacles`.
 
-```
-data/wall.txt                      1.1  columnas: N time  (wall-clock, no del dump)
-data/runs/t90/<x>/*.txt            1.2  una carpeta por valor explorado
-data/runs/empty/*.txt              mesa vacía para la banda de 1.2
-data/runs/msd/*.txt                1.3  una realización para el DCM
-data/runs/configs/<nombre>/*.txt   1.3  D vs t90
-data/sample_traj.txt               GIF
-```
+### Múltiples realizaciones
 
-Ajuste del DCM: `python python/make.py --t-min 2 --t-max 20`
+`run.py` ejecuta el motor con una semilla distinta por realización.
+Las semillas son `seed`, `seed + 1`, ..., `seed + reps - 1`.
 
-```
-python/make.py       pipeline (tablas + figuras + GIF)
-python/animate.py    animación suelta
-python/lib/          dump, métricas, estilo de figuras
-python/plotters/     figuras 1.1–1.3
+```bash
+python3 python/run.py \
+    --outdir data/runs/empty \
+    --n 100 \
+    --reps 5 \
+    --seed 1 \
+    --tmax 100 \
+    --k 100
 ```
 
-# USO INTERNO - completed so far
+| Opción del runner | Default | Descripción |
+|---|---|---|
+| `--n` | `100` | Cantidad de partículas; admite varios valores con `--wall` |
+| `--r` | `0.0175` | Radio de partícula (m) |
+| `--reps` | `5` | Realizaciones por valor de N |
+| `--seed` | `1` | Primera semilla |
+| `--tmax` | `100` | Tiempo simulado máximo (s) |
+| `--k` | `0` | Frecuencia de guardado; independiente del default del ejecutable |
+| `--obstacles` | — | Archivo de obstáculos |
+| `--jobs` | núcleos disponibles | Realizaciones concurrentes con `--outdir` |
+| `--preview` | `first` | Generar vistas previas de la primera realización, todas o ninguna |
+| `--exe` | `build/EventDrivenSim` | Ejecutable del motor |
 
-1. Collision.hpp/.cpp: collision *times* (particle-wall, particle-particle, particle-obstacle -> obstacle == resting particle) AND post-collision *velocities* (wall bounce, with impulse, and obstacle reflection v'=v-2(v*n)*n [formulas as presented in class]
+Usar una carpeta nueva para cada experimento. El runner evita sobrescribir sus archivos de resultados y metadatos.
 
-2. Obstacle.hpp/.cpp: reads config file (one 'xk yk Rk' line per obstacle) and validates: 1. Rk >= r, 2. no overlap between obstacles (exactly touching is fine), 3. fully inside the table (touching wall is fine)
+### Archivos de salida
 
-3. Geometry.hpp: added discs_overlap and disc_inside inside 
+```text
+data/runs/empty/
+    run_001.txt
+    run_001.gif
+    run_001.png
+    run_002.txt
+    ...
+    summary.dat
+    params.txt
+    obstacles.txt
+```
 
-4. TESTS
-- One test for different types of collisions and whether it detects properly the collisions
-- Test for obstacles 
+- `run_<semilla>.txt`: trayectoria de una realización.
+- `summary.dat`: columnas `seed t90 Ng events engine_seconds`.
+- `params.txt`: parámetros del runner, semillas, comando y commit.
+- `obstacles.txt`: copia de la configuración, solo si se proporcionó.
+- GIF y PNG: vistas previas, según `--preview`.
 
-TO BUILD AND RUN THE TEST:
-`cmake --build build -j && ctest --test-dir build --output-on-failure`
-Should output: 100% tests passed
+## Animación de las trayectorias
+Por defecto, `run.py` llama a `animate.py` después de terminar todas las realizaciones y genera un GIF y un PNG de la primera.
 
+```bash
+# Vista previa de cada realización.
+python3 python/run.py \
+    --outdir data/runs/previews \
+    --reps 3 --tmax 10 --k 100 --preview all
+```
+Usar `--preview none` para guardar únicamente los datos y resúmenes.
+
+También puede animarse una trayectoria existente sin repetir la simulación:
+
+```bash
+python3 python/animate.py \
+    --traj data/runs/empty/run_001.txt \
+    --out data/runs/empty/run_001.gif \
+    --png data/runs/empty/run_001.png
+```
+
+Para abrir una ventana interactiva:
+
+```bash
+python3 python/animate.py \
+    --traj data/runs/empty/run_001.txt \
+    --show
+```
+
+## Verificación de la simulación
+### Tests automatizados
+
+```bash
+ctest --test-dir build --output-on-failure
+```
+TODO: capaz agregar un tester en python para ver si el output de los archivos es correcto (particulas dentro de la mesa y no hay solapamiento en ningun momento, que una particula usada no vuelva a frescaetc.)
+
+### Conservación de la energía
+TODO!!!
+
+## Análisis de resultados
+`make.py` lee los datos existentes y genera tablas y figuras. No ejecuta nuevamente el motor.
+
+### Experimentos de entrada
+
+Mesa sin obstáculos:
+
+```bash
+python3 python/run.py \
+    --outdir data/runs/empty \
+    --reps 5 --tmax 100 --k 100
+```
+
+Un punto del barrido de configuración:
+
+```bash
+python3 python/run.py \
+    --outdir data/runs/t90/0.60 \
+    --obstacles configs/x0.60.txt \
+    --reps 5 --tmax 100 --k 100
+```
+
+Una realización para el desplazamiento cuadrático medio:
+
+```bash
+python3 python/run.py \
+    --outdir data/runs/msd \
+    --reps 1 --tmax 30 --k 20
+```
+
+### Generación de tablas y figuras
+
+```bash
+python3 python/make.py
+```
+
+Para elegir la ventana de ajuste del desplazamiento cuadrático medio:
+
+```bash
+python3 python/make.py --t-min 2 --t-max 20
+```
+
+Estructura esperada:
+
+```text
+data/wall.txt                          rendimiento: N time
+data/runs/t90/<x>/run_*.txt             barrido de t90
+data/runs/empty/run_*.txt               referencia sin obstáculos
+data/runs/msd/run_*.txt                 DCM
+data/runs/configs/<nombre>/run_*.txt    comparación D vs. t90
+```
+
+## Evaluación del rendimiento computacional
+
+```bash
+python3 python/run.py \
+    --wall data/wall.txt \
+    --n 50 100 200 300 \
+    --reps 10 \
+    --tmax 30
+```
+
+## Estructura del proyecto
+
+```text
+src/                  motor de simulación
+configs/              configuraciones de obstáculos
+tests/                tests del motor
+python/run.py         ejecución de realizaciones y previews
+python/analyze.py     tablas y figuras de análisis
+python/animate.py     animación independiente
+python/lib/           lectura, métricas, chequeos y estilo
+python/plotters/      generación de figuras
+data/                 resultados generados
+```

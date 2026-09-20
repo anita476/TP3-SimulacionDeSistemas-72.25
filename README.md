@@ -236,7 +236,6 @@ Todas salen de `animate.py` y leen únicamente el dump. Cada cuadro es un evento
 | (siempre) | Anillo sobre la partícula que acaba de hacer un gol y arco resaltado en ese cuadro |
 | `--inset` | Inset con Fu(t) que crece con la animación, con la línea Fu = 0.9 |
 | `--arrows` | Flechas de velocidad (vx, vy exactas del cuadro). Útil con pocas partículas; con N = 100 tapan la mesa |
-| `--clean` | Sin ejes ni ticks, con barra de escala de 0.2 m. Pensado para el video |
 | `--frame N` | Cuadro del PNG; `0` es la condición inicial (default: el del medio) |
 | `--mp4 ARCHIVO` | Video MP4 con ffmpeg, formato para YouTube/Vimeo. `--out` sigue generando GIF |
 | `--fps N` | Cuadros por segundo de reproducción (default 8) |
@@ -250,8 +249,7 @@ Todas parten del mismo dump; solo cambian las opciones. `RUN` es una trayectoria
 | Básica | (ninguna) | Mesa, arcos, obstáculos, partículas, Ng y Fu. Es la que genera `run.py` como vista previa |
 | Con Fu(t) | `--inset` | Ver cuándo se alcanza Fu = 0.9 mientras corre la animación |
 | Con flechas | `--arrows` | Dirección y módulo de la velocidad; solo con pocas partículas |
-| Limpia | `--clean` | Sin ejes, con barra de escala; para el video de la presentación |
-| Todo incluido | `--inset --arrows --clean` | Demo con pocas partículas: choques, Fu(t) y sin ejes |
+| Todo incluido | `--inset --arrows` | Demo con pocas partículas: choques y Fu(t) |
 
 ```bash
 # Básica: GIF y PNG del cuadro del medio
@@ -263,11 +261,11 @@ python3 python/animate.py --traj RUN --inset --mp4 anim.mp4
 # Con flechas (pocas partículas)
 python3 python/animate.py --traj RUN --arrows --mp4 anim.mp4
 
-# Limpia, para el video
-python3 python/animate.py --traj RUN --clean --mp4 anim.mp4 --fps 12
+# Video para la presentación (misma figura que el PNG)
+python3 python/animate.py --traj RUN --mp4 anim.mp4 --fps 12
 
 # Todo incluido
-python3 python/animate.py --traj RUN --inset --arrows --clean --mp4 anim.mp4 --fps 10
+python3 python/animate.py --traj RUN --inset --arrows --mp4 anim.mp4 --fps 10
 
 # Un cuadro en particular: la condición inicial (0) o el primer gol
 python3 python/animate.py --traj RUN --png inicial.png --frame 0
@@ -283,7 +281,7 @@ Demo con pocas partículas guardando todos los eventos (`-k 1`), para mostrar lo
 ./build/EventDrivenSim -N 12 -tmax 3 -k 1 -seed 4 \
     -obstacles configs/x0.60.txt --out data/demo.txt
 python3 python/animate.py --traj data/demo.txt \
-    --inset --arrows --clean --mp4 data/figs/demo.mp4 --fps 10
+    --inset --arrows --mp4 data/figs/demo.mp4 --fps 10
 ```
 
-El MP4 requiere `ffmpeg` (`brew install ffmpeg`); los PNG y GIF no.
+El MP4 requiere `ffmpeg`.

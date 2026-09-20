@@ -108,6 +108,7 @@ data/runs/empty/
 
 - `run_<semilla>.txt`: trayectoria de una realización.
 - `summary.dat`: columnas `seed t90 Ng events engine_seconds`.
+- `data/wall.txt` (modo `--wall`): columnas `N events wall_events pair_events time`; `time` es el tiempo del motor (cola inicial + loop de eventos), sin generación de la condición inicial ni escritura de archivos.
 - `params.txt`: parámetros del runner, semillas, comando y commit.
 - `obstacles.txt`: copia de la configuración, solo si se proporcionó.
 - GIF y PNG: vistas previas, según `--preview`.
@@ -196,7 +197,7 @@ python3 python/make.py --t-min 2 --t-max 20
 Estructura esperada:
 
 ```text
-data/wall.txt                          rendimiento: N time
+data/wall.txt                          rendimiento: N events wall_events pair_events time
 data/runs/t90/<x>/run_*.txt             barrido de t90
 data/runs/empty/run_*.txt               referencia sin obstáculos
 data/runs/msd/run_*.txt                 DCM

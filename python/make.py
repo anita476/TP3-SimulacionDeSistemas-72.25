@@ -5,7 +5,7 @@
 
 Lo que no esté, se omite. Los dumps mandan sobre tablas viejas.
 
-    data/wall.txt                      1.1  columnas: N time
+    data/wall.txt                      1.1  columnas: N events wall_events pair_events time (o menos)
     data/runs/t90/<x>/*.txt            1.2
     data/runs/empty/*.txt              mesa vacía (1.2)
     data/runs/msd/*.txt                1.3 DCM, una realización
@@ -23,6 +23,7 @@ sys.path.insert(0, str(HERE / "lib"))
 
 from metrics import diffusion, fit_line, mean_std, msd_series
 from runs import dump_paths, read_realizations, run_folders, t90_summary
+from tables import load_table
 from traj import read_traj
 
 ROOT = HERE.parent
@@ -51,38 +52,51 @@ def _window(series: list[tuple[float, float]], t_min: float | None, t_max: float
     return xs, ys
 
 
+def runtime_table(wall: Path) -> list[tuple[int, float, float, dict[str, float]]]:
+    """Agrupa wall.txt por N: (N, <tiempo>, desvío, {columna: promedio}) para las
+    columnas de eventos presentes (events, wall_events, pair_events)."""
+    with wall.open(encoding="utf-8") as stream:
+        header = next((l.split() for l in stream if l.strip() and not l.startswith("#")), None)
+    if header is None or header[0] != "N" or "time" not in header:
+        raise ValueError(f"{wall}: se esperaban las columnas 'N [events wall_events pair_events] time'")
+    counts = [c for c in ("events", "wall_events", "pair_events") if c in header]
+    rows = load_table(wall, ("N", "time", *counts))
+    grouped: dict[int, list[dict[str, str]]] = {}
+    for row in rows:
+        grouped.setdefault(int(row["N"]), []).append(row)
+    out = []
+    for n in sorted(grouped):
+        mean, std = mean_std([float(r["time"]) for r in grouped[n]])
+        means = {c: sum(float(r[c]) for r in grouped[n]) / len(grouped[n]) for c in counts}
+        out.append((n, mean, std, means))
+    return out
+
+
 def _step_runtime(data: Path) -> None:
     wall = data / "wall.txt"
     table = data / "runtime.txt"
     if wall.is_file():
-        grouped: dict[int, list[float]] = {}
-        header = None
-        with wall.open(encoding="utf-8") as stream:
-            for line in stream:
-                line = line.split("#", 1)[0].strip()
-                if not line:
-                    continue
-                parts = line.split()
-                if header is None:
-                    if parts[:2] != ["N", "time"]:
-                        raise ValueError(f"{wall}: se esperaban las columnas N time")
-                    header = parts
-                    continue
-                if len(parts) != 2:
-                    raise ValueError(f"{wall}: se esperaban 2 campos, hay {len(parts)}: {line!r}")
-                n, wall_t = int(parts[0]), float(parts[1])
-                grouped.setdefault(n, []).append(wall_t)
-        if not grouped:
-            raise ValueError(f"{wall}: no hay filas de datos")
-        lines = []
-        for n in sorted(grouped):
-            mean, std = mean_std(grouped[n])
-            lines.append(f"{n} {mean:.6g} {std:.6g}")
-        _write_table(table, "N t_mean t_std", lines)
-    if table.is_file():
-        _run(HERE / "plotters" / "plot_runtime.py", "--input", str(table), "--output", str(data / "runtime.png"))
-    else:
+        rows = runtime_table(wall)
+        cols = ("events", "wall_events", "pair_events")
+        _write_table(
+            table,
+            "N t_mean t_std events_mean wall_mean pair_mean",
+            [f"{n} {m:.6g} {s:.6g} " + " ".join(f"{ev[c]:.6g}" if c in ev else "None" for c in cols)
+             for n, m, s, ev in rows],
+        )
+    if not table.is_file():
         print(f"se omite 1.1: no hay {wall} ni {table}")
+        return
+    _run(
+        HERE / "plotters" / "plot_runtime.py",
+        "--input", str(table),
+        "--output", str(data / "runtime.png"),
+        "--loglog-output", str(data / "runtime_loglog.png"),
+        "--error-output", str(data / "runtime_error.png"),
+        "--events-output", str(data / "events_vs_n.png"),
+        "--events-loglog-output", str(data / "events_vs_n_loglog.png"),
+        "--per-event-output", str(data / "time_per_event.png"),
+    )
 
 
 def _step_t90(data: Path, xlabel: str) -> None:
@@ -111,7 +125,7 @@ def _step_t90(data: Path, xlabel: str) -> None:
 
 def _step_msd(data: Path, t_min: float | None, t_max: float | None) -> None:
     table = data / "msd.txt"
-    dumps = _txts(data / "runs" / "msd")
+    dumps = dump_paths(data / "runs" / "msd")
     if dumps:
         series = msd_series(read_traj(dumps[0]))
         _write_table(table, "t msd", [f"{t:.6g} {msd:.6g}" for t, msd in series])
@@ -129,8 +143,8 @@ def _step_msd(data: Path, t_min: float | None, t_max: float | None) -> None:
 def _step_d_vs_t90(data: Path, t_min: float | None, t_max: float | None) -> None:
     table = data / "d_vs_t90.txt"
     lines = []
-    for folder in _dirs_with_txt(data / "runs" / "configs"):
-        paths = _txts(folder)
+    for folder in run_folders(data / "runs" / "configs"):
+        paths = dump_paths(folder)
         xs, ys = _window(msd_series(read_traj(paths[0])), t_min, t_max)
         d = diffusion(fit_line(xs, ys)[0])
         mean, std = mean_std([t90(read_traj(path)) for path in paths])

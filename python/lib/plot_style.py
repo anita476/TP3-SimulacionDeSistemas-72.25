@@ -147,20 +147,20 @@ def _hits(bbox, points, boxes) -> int:
     return n
 
 
-def place_legend_below(ax, ncol: int = 1):
-    """Leyenda adentro, en la esquina que menos tape; si no hay, debajo de los ejes."""
+_INSIDE = dict(frameon=True, borderaxespad=0.35, labelspacing=0.25, framealpha=0.92, ncol=1)
+
+
+def legend_corner(ax) -> str | None:
+    """Esquina interior que menos tapa datos, o None si todas tapan demasiado."""
     handles, labels = ax.get_legend_handles_labels()
     if not any(labels):
         return None
-
     fig = ax.figure
     fig.canvas.draw()
     points, boxes = _occupancy(ax)
-    inside = dict(frameon=True, borderaxespad=0.35, labelspacing=0.25, framealpha=0.92, ncol=1)
-
     scored: list[tuple[int, str]] = []
     for loc in _CORNERS:
-        legend = ax.legend(handles, labels, loc=loc, **inside)
+        legend = ax.legend(handles, labels, loc=loc, **_INSIDE)
         legend.set_in_layout(False)
         fig.canvas.draw()
         bbox = legend.get_window_extent().transformed(ax.transAxes.inverted())
@@ -168,12 +168,21 @@ def place_legend_below(ax, ncol: int = 1):
         scored.append((_hits(bbox, points, boxes), loc))
     scored.sort(key=lambda item: (item[0], _CORNERS.index(item[1])))
     hits, loc = scored[0]
-    if hits <= _HITS_MAX:
-        legend = ax.legend(handles, labels, loc=loc, **inside)
+    return loc if hits <= _HITS_MAX else None
+
+
+def place_legend_below(ax, ncol: int = 1):
+    """Leyenda adentro, en la esquina que menos tape; si no hay, debajo de los ejes."""
+    handles, labels = ax.get_legend_handles_labels()
+    if not any(labels):
+        return None
+    loc = legend_corner(ax)
+    if loc is not None:
+        legend = ax.legend(handles, labels, loc=loc, **_INSIDE)
         legend.set_in_layout(False)
         legend.set_zorder(20)
         return legend
-    return fig.legend(handles, labels, loc="outside lower center", ncol=ncol)
+    return ax.figure.legend(handles, labels, loc="outside lower center", ncol=ncol)
 
 
 def save_figure(fig, path: Path) -> None:

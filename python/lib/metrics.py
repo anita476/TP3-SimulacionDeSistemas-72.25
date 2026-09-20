@@ -68,3 +68,7 @@ def fit_line(xs: list[float], ys: list[float]) -> tuple[float, float]:
 
 def diffusion(slope: float) -> float:
     return slope / 4.0
+
+def ng_series(traj: Traj) -> list[tuple[float, int]]:
+    """(t, Ng) de cada cuadro. Todo gol se guarda, así que la escalera es exacta."""
+    return [(frame.t, frame.ng) for frame in traj.frames]

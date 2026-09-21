@@ -23,6 +23,7 @@ def main() -> None:
     parser.add_argument("--output", type=Path, default=None)
     parser.add_argument("--t-min", type=float, default=None, help="inicio de la ventana de ajuste (s)")
     parser.add_argument("--t-max", type=float, default=None, help="fin de la ventana de ajuste (s)")
+    parser.add_argument("--error-output", type=Path, default=None, help="curva E(D) del ajuste (Teórica 0)")
     args = parser.parse_args()
 
     try:
@@ -46,7 +47,10 @@ def main() -> None:
     print(f"D = {d:.6g} m^2/s  (pendiente / 4)")
 
     fig, ax = new_figure()
-    ax.plot(times, msds, color=BLUE, marker="o", linestyle="none", markeredgecolor="black", markeredgewidth=0.6, zorder=3, label="DCM")
+    if len(times) > 40:
+        ax.plot(times, msds, color=BLUE, linestyle="-", zorder=3, label="DCM")
+    else:
+        ax.plot(times, msds, color=BLUE, marker="o", linestyle="none", markeredgecolor="black", markeredgewidth=0.6, zorder=3, label="DCM")
     t0, t1 = fit_t[0], fit_t[-1]
     ax.plot(
         [t0, t1],
@@ -60,6 +64,28 @@ def main() -> None:
     apply_sci_axis(ax, "y")
     place_legend_below(ax, ncol=2)
     save_figure(fig, args.output or args.input.with_suffix(".png"))
+
+    if args.error_output:
+        # Teórica 0: E(D) = sum [msd_i - f(t_i, D)]², con f = b(D) + 4 D t
+        # y b(D) el intercepto que minimiza E para ese D. El mínimo es la pendiente / 4.
+        n = len(fit_t)
+        d_hi = max(d * 2.5, 1e-6)
+        grid = [d_hi * i / 400 for i in range(401)]
+        errors = []
+        for d_try in grid:
+            slope_try = 4.0 * d_try
+            intercept_try = sum(y - slope_try * x for x, y in zip(fit_t, fit_msd)) / n
+            errors.append(sum((y - intercept_try - slope_try * x) ** 2 for x, y in zip(fit_t, fit_msd)))
+        d_best = grid[errors.index(min(errors))]
+        print(f"E(D) mínimo en D = {d_best:.6g} m^2/s")
+        fig, ax = new_figure()
+        ax.plot(grid, errors, color=BLUE, zorder=3)
+        ax.axvline(d, color=VERMILLION, linestyle="--", zorder=2, label=rf"$D^* = {d:.3g}$")
+        style_axes(ax, r"coeficiente de difusión $D$ (m$^2$/s)", r"error $E(D)$")
+        ax.set_ylim(bottom=0)
+        apply_sci_axis(ax, "x")
+        place_legend_below(ax, ncol=1)
+        save_figure(fig, args.error_output)
 
 
 if __name__ == "__main__":

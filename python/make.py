@@ -132,7 +132,7 @@ def _step_msd(data: Path, t_min: float | None, t_max: float | None) -> None:
     if not table.is_file():
         print(f"se omite 1.3 DCM: no hay {data / 'runs' / 'msd'} ni {table}")
         return
-    args = ["--input", str(table), "--output", str(data / "msd.png")]
+    args = ["--input", str(table), "--output", str(data / "msd.png"), "--error-output", str(data / "msd_error.png")]
     if t_min is not None:
         args.extend(["--t-min", str(t_min)])
     if t_max is not None:
@@ -143,13 +143,22 @@ def _step_msd(data: Path, t_min: float | None, t_max: float | None) -> None:
 def _step_d_vs_t90(data: Path, t_min: float | None, t_max: float | None) -> None:
     table = data / "d_vs_t90.txt"
     lines = []
-    for folder in run_folders(data / "runs" / "configs"):
+    folders = []
+    empty = data / "runs" / "empty"
+    if dump_paths(empty):
+        folders.append(empty)
+    folders.extend(run_folders(data / "runs" / "configs"))
+    for folder in folders:
         paths = dump_paths(folder)
         xs, ys = _window(msd_series(read_traj(paths[0])), t_min, t_max)
         d = diffusion(fit_line(xs, ys)[0])
-        mean, std = mean_std([t90(read_traj(path)) for path in paths])
-        print(f"D = {d:.6g} m^2/s  (pendiente / 4)")
-        lines.append(f"{folder.name} {d:.6g} {mean:.6g} {std:.6g}")
+        mean, std, _ng, reached = t90_summary(read_realizations(folder))
+        if reached == 0:
+            print(f"se omite {folder.name}: ninguna realización llegó a Fu = 0.9")
+            continue
+        label = "vacia" if folder == empty else folder.name
+        print(f"{label}: D = {d:.6g} m^2/s  (pendiente / 4), <t90> = {mean:.6g} ± {std:.6g} ({reached} llegaron)")
+        lines.append(f"{label} {d:.6g} {mean:.6g} {std:.6g}")
     if lines:
         lines.sort()
         _write_table(table, "config D t90 t90_std", lines)

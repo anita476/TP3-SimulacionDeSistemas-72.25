@@ -39,9 +39,16 @@ def mean_std(values: list[float]) -> tuple[float, float]:
     return mean, var ** 0.5
 
 def msd_series(traj: Traj) -> list[tuple[float, float]]:
+    """⟨Δr²⟩(t) respecto del primer cuadro, promedio sobre las N partículas."""
+    if not traj.frames:
+        raise ValueError("la trayectoria no tiene cuadros")
     origin = traj.frames[0].particles
+    if len(origin) != traj.n:
+        raise ValueError(f"el cuadro inicial tiene {len(origin)} partículas, N = {traj.n}")
     series = []
     for frame in traj.frames:
+        if len(frame.particles) != traj.n:
+            raise ValueError(f"t={frame.t}: hay {len(frame.particles)} partículas, N = {traj.n}")
         acc = 0.0
         for particle, (x0, y0, *_rest) in zip(frame.particles, origin):
             dx = particle[0] - x0

@@ -86,4 +86,6 @@ data/
 *.mp4
 *.png
 *.webp
+!docs/results/**/*.png
+!docs/results/**/*.txt
 .vscode/c_cpp_properties.json

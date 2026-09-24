@@ -89,3 +89,12 @@ data/
 !docs/results/**/*.png
 !docs/results/**/*.txt
 .vscode/c_cpp_properties.json
+
+# latex 
+*.aux
+*.gz
+*.fdb_latexmk
+*.nav
+*.snm
+*.fls 
+*.toc

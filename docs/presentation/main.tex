@@ -1,0 +1,536 @@
+\documentclass[aspectratio=169,10pt]{beamer}
+\def\animbuild{0} % 1 = animaciones
+\input{estilo}
+\usepackage{caption}
+\usepackage[colorlinks=true, urlcolor=blue, linkcolor=blue]{hyperref}
+\usepackage{media9}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+
+\newif\ifshowvideo 
+\showvideotrue
+%% cambiar para mostrar las animaciones embebdidas o los stills$$
+
+\title[TP2]{Trabajo Práctico Nro. 2: Autómatas Celulares}
+\subtitle{Autómata Off-Lattice: Bandadas de agentes autopropulsados}
+\author[Grupo 03]{Matías Leporini \and Camila Lee \and Ana Negre}
+\institute{
+Instituto Tecnológico de Buenos Aires (ITBA)\\
+72.25 - Simulación de Sistemas
+}
+\date{4 de septiembre de 2026}
+
+\begin{document}
+
+\begin{frame}[plain,noframenumbering]
+  \titlepage
+
+
+\end{frame}
+
+\section{Introducción}
+
+\begin{frame}{Modelo}
+  \begin{columns}[T]
+    \begin{column}{0.56\textwidth}
+      \textbf{Evolución temporal}\par\vspace{4pt}
+      \setlength{\abovedisplayskip}{0pt}\setlength{\abovedisplayshortskip}{0pt}
+      \begin{align}
+        \vv{x}_i(t+1) &= \vv{x}_i(t) + \vv{v}_i(t)\,\Delta t \\[2pt]
+        \theta(t+1) &= \langle \theta(t) \rangle_{r_{c}} + \Delta\theta \\[2pt]
+        \theta(t+1) &= \theta_j(t) + \Delta\theta
+      \end{align}
+    \end{column}
+    \begin{column}{0.42\textwidth}
+    
+      \textbf{}\par\vspace{4pt}
+      {\footnotesize
+      Ec.~(2), promedio de Vicsek:
+      \[ \langle \theta(t) \rangle_{r_{c}} = \operatorname{atan2}\!\left[
+         \langle \sin\theta(t) \rangle_{r_{c}},\ \langle \cos\theta(t) \rangle_{r_{c}} \right] \]
+      sobre las partículas dentro de $r_{c}$, incluyendo la propia.
+
+      \vspace{4pt}
+      Ec.~(3), votante: $j$ vecino elegido al azar.
+
+      \vspace{4pt}
+      $\Delta\theta$: ruido uniforme en $[-\eta/2,\ \eta/2]$.\par}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\section{Implementación}
+
+\begin{frame}{Arquitectura del motor}
+    \centering
+    \begin{columns}
+        \begin{column}{0.75\textwidth}
+            \begin{figure}
+                \centering
+            \includegraphics[width=1\linewidth]{uml_system_small.png}
+            \end{figure}
+        \end{column}
+        \begin{column}{0.25\textwidth}
+            \begin{itemize}
+                \item Motor hecho en C++
+                \item Cluster y OffLattice independientes 
+            \end{itemize}
+        \end{column}
+    \end{columns}
+\end{frame}
+
+\begin{frame}{Paso de simulación}
+  \begin{center}
+    \begin{minipage}{0.85\textwidth}
+      \scriptsize
+      \begin{algorithmic}[1]
+
+        \For{$t = 0,\ldots,T-1$}
+
+          \State $\mathcal{V} \gets$ calcular vecinos mediante CIM
+
+          \For{$i = 1,\ldots,N$}
+
+            \If{el modelo es Vicsek}
+              \State $\bar{\theta} \gets
+              \operatorname{atan2}\left(
+              \sum\limits_{j \in \mathcal{V}_i \cup \{i\}}
+              \sin(\theta_j),
+              \sum\limits_{j \in \mathcal{V}_i \cup \{i\}}
+              \cos(\theta_j)
+              \right)$
+            \EndIf
+
+            \If{el modelo es votante}
+              \State elegir $k \in \mathcal{V}_i$ al azar
+              \State $\bar{\theta} \gets \theta_k$
+            \EndIf
+
+            \State $\theta_i^{\mathrm{nuevo}}
+            \gets \bar{\theta} + \Delta\theta$
+
+          \EndFor
+
+          \For{$i = 1,\ldots,N$}
+            \State $\vv{x}_i \gets
+            \left(\vv{x}_i + \vv{v}_i \Delta t\right) \bmod L$
+            \State $\theta_i \gets \theta_i^{\mathrm{nuevo}}$
+          \EndFor
+
+        \EndFor
+
+      \end{algorithmic}
+    \end{minipage}
+  \end{center}
+\end{frame}
+
+\section{Simulaciones}
+
+\begin{frame}{Sistema particular simulado}
+  \begin{cols}
+    \begin{column}{0.44\textwidth}
+      \centering
+      \figura{figuras_new/sistema.png}
+    \end{column}
+    \begin{column}{0.52\textwidth}
+      \begin{parametros}[Parámetros fijos]
+        \item $L = 10$, \ $r_{c} = 1$, condiciones periódicas de contorno
+        \item $v = 3\ten{-2}$ igual para todas, \ $\Delta t = 1$
+        \item $\vv{x}_i$ y $\theta_i$ iniciales uniformes
+        \item 10 realizaciones de $T = 1\ten{4}$ pasos, con semilla distinta
+      \end{parametros}
+      \vspace{4pt}
+      \begin{parametros}[Parámetros variables]
+        \item $\rho \in [1/(3\pi), 8]$ con $N = \rho L^{2}$
+        \item $\eta \in [0,\ 6]$ 
+        \item Regla de interacción: Vicsek o votante
+      \end{parametros}
+    \end{column}
+  \end{cols}
+\end{frame}
+
+\begin{frame}{Observables}
+  \begin{columns}[T]
+    \begin{column}{0.54\textwidth}
+      \textbf{Observables primarios}\par\vspace{6pt}
+      \small
+      \begin{itemize}\setlength{\itemsep}{12pt}
+        \item Parámetro de orden:
+              \[ \va(t) = \frac{1}{N\,v}\left| \sum_{i=1}^{N} \vv{v}_i(t) \right| \]
+              {\footnotesize 0: desorden total. \ 1: polarización total.}
+        \item Fracción en la componente gigante:
+              \[ S(t) = \frac{\left| \mathcal{C}(t) \right|}{N} \]
+              {\footnotesize $\mathcal{C}$: mayor cluster; vecinos a distancia $< r_{c}$
+              encadenados.}
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.42\textwidth}
+      \textbf{Observables escalares}\par\vspace{6pt}
+      \small
+      \begin{itemize}\setlength{\itemsep}{12pt}
+        \item Promedio en el estacionario, dentro de cada realización:
+              \[ \langle \va \rangle_{\text{realiz.}} =
+                 \big\langle\, \va(t) \,\big\rangle_{t \geq t^{*}} \]
+        \item Promedio entre las realizaciones:
+              \[ \langle \va \rangle = \big\langle\, \langle \va \rangle_{\text{realiz.}}
+                 \,\big\rangle_{10\ \text{realiz.}} \]
+        \item Ídem con $S(t)$
+      \end{itemize}
+      \vspace{6pt}
+      {\footnotesize Barra de error: desvío entre totalidad de puntos a partir t^{*}
+      \par
+      $t^{*}$ se fija en relación a la evolución temporal}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+
+\begin{frame}{Observables: cálculo de $S$}
+    \centering{
+      \scriptsize
+      \begin{algorithmic}[1]
+        \State Obtener las posiciones de las partículas en el tiempo $t$
+        \State Construir la lista de vecinos $vecinos[i]$
+
+        \State $clusters \gets \emptyset$
+        \State Marcar todas las partículas como no visitadas
+
+        \ForAll{partícula $i$ no visitada}
+          \State Crear un cluster vacío
+          \State Explorar $i$ y sus vecinos
+          \State Agregar al cluster todas las partículas conectadas
+          \State Marcar las partículas como visitadas
+          \State Agregar el cluster a $clusters$
+        \EndFor
+
+        \State $N \gets$ cantidad total de partículas
+        \State $N_{\max} \gets$ tamaño del cluster más grande
+        \State $S(t) \gets N_{\max}/N$
+
+        \State \Return $clusters$, $S(t)$
+      \end{algorithmic}
+      }
+\end{frame}
+
+
+
+
+% Por cada input: animacion, evolucion temporal, escalar vs input.
+\section{Resultados}
+
+\ifshowvideo
+    \begin{frame}{Vicsek: respuesta al ruido}
+      \begin{columns}[T]
+        \begin{column}{0.50\textwidth}
+          \centering{\small $\eta = 1\ten{-1},\ \rho = 4$}\par
+          \includemedia[
+            width=0.8\linewidth,
+            height=0.6\linewidth,
+            activate=onclick,% maybe change to the slow one ! %
+            addresource=animaciones/vicsek_rho4_eta0.1_FAST.mp4,
+            flashvars={
+                    source=animaciones/vicsek_rho4_eta0.1_FAST.mp4
+                    &autoPlay=false
+                    &loop=true
+            }
+            ]{\includegraphics[width=0.8\linewidth]{figs/stills/vicsek_rho4_eta0.1/tmid.png}}{VPlayer.swf}
+        \end{column}\href{}{}
+        \begin{column}{0.50\textwidth}
+          \centering{\small $\eta = 5,\ \rho = 4$}\par
+          \includemedia[
+            width=0.8\linewidth,
+            height=0.6\linewidth,
+            activate=onclick,
+            addresource=animaciones/vicsek_rho4_eta5.0.mp4,
+            flashvars={
+                    source=animaciones/vicsek_rho4_eta5.0.mp4
+                    &autoPlay=false
+                    &loop=true
+            }
+            ]{\includegraphics[width=0.8\linewidth]{figs/stills/vicsek_rho4_eta5.0/tmid.png}}{VPlayer.swf}
+        \end{column}
+      \end{columns}
+    \end{frame}
+\else 
+    \begin{frame}{Vicsek: respuesta al ruido}
+      \begin{columns}[T]
+        \begin{column}{0.50\textwidth}
+          \centering{\small $\eta = 1\ten{-1},\ \rho = 4$}\par
+          \begin{figure}
+              \centering
+              \includegraphics[width=1\linewidth]{figs//stills//vicsek_rho4_eta0.1/tmid.png}
+                \caption*{\url{https://youtu.be/B0OuZC19UME}}        
+            \end{figure}
+        \end{column}\href{}{}
+        \begin{column}{0.50\textwidth}
+          \centering{\small $\eta = 5,\ \rho=4$}\par
+          \begin{figure}
+              \centering
+              \includegraphics[width=1\linewidth]{figs//stills//vicsek_rho4_eta5.0/tmid.png}
+                \caption*{\url{https://youtu.be/mg9IxUgH_5s}}        
+            \end{figure}
+        \end{column}
+      \end{columns}
+    \end{frame}
+    
+\fi
+
+
+\begin{frame}{Vicsek: evolución temporal de $\va$}
+  \begin{cols}
+    \begin{column}{0.70\textwidth}
+      \figura{figuras_new/va_vs_t_vicsek_rho8.png}
+    \end{column}
+    \begin{column}{0.30\textwidth}
+      \begin{parametros}
+        \item $\rho = 8$
+      \end{parametros}
+    \end{column}
+  \end{cols}
+\end{frame}
+
+\begin{frame}{Vicsek: respuesta al ruido de $\va$}
+  \centering{
+      \figura{figuras_new/va_vs_eta_vicsek.png}
+    }
+\end{frame}
+
+\begin{frame}{Vicsek: evolución temporal de $S$}
+  \begin{cols}
+    \begin{column}{0.70\textwidth}
+      \figura{figuras_new/s_vs_t_vicsek_rho2.png}
+    \end{column}
+    \begin{column}{0.28\textwidth}
+      \begin{parametros}
+        \item $\rho = 2$
+      \end{parametros}
+      \vspace{4pt}
+      {\footnotesize \par}
+    \end{column}
+  \end{cols}
+\end{frame}
+
+\begin{frame}{Vicsek: evolución temporal de $S$}
+  \begin{cols}
+    \begin{column}{0.70\textwidth}
+      \figura{figuras_new/s_vs_t_vicsek_rho1_3pi.png}
+    \end{column}
+    \begin{column}{0.28\textwidth}
+      \begin{parametros}
+        \item $\rho = \frac{1}{3\pi}$
+      \end{parametros}
+      \vspace{4pt}
+      {\footnotesize \par}
+    \end{column}
+  \end{cols}
+\end{frame}
+
+\begin{frame}{Vicsek: respuesta al ruido de $S$}
+    \centering{
+      \figura{figuras_new/s_vs_eta_vicsek_small_dens.png}
+      }
+\end{frame}
+
+
+\begin{frame}{Vicsek: polarización en función de la componente gigante}
+    \centering{
+      \figura{figuras_new/va_vs_s_vicsek.png}
+    }
+\end{frame}
+
+
+\ifshowvideo
+\begin{frame}{Votante: respuesta al ruido}
+  \begin{columns}[T]
+    \begin{column}{0.50\textwidth}
+      \centering{\small $\eta = 1\ten{-1},\space\rho = 4$}\par
+      \includemedia[
+            width=0.8\linewidth,
+            height=0.6\linewidth,
+            activate=onclick,
+            addresource=animaciones/voter_rho4_eta0.1.mp4,
+            flashvars={
+                    source=animaciones/voter_rho4_eta0.1.mp4
+                    &autoPlay=false
+                    &loop=true
+            }
+            ]{\includegraphics[width=0.8\linewidth]{figs/stills/voter_rho4_eta0.1/tmid.png}}{VPlayer.swf}
+    \end{column}
+    \begin{column}{0.50\textwidth}
+      \centering{\small $\eta = 5,\space\rho = 4$}\par
+      \includemedia[
+            width=0.8\linewidth,
+            height=0.6\linewidth,
+            activate=onclick,
+            addresource=animaciones/voter_rho4_eta5.0.mp4,
+            flashvars={
+                    source=animaciones/voter_rho4_eta5.0.mp4
+                    &autoPlay=false
+                    &loop=true
+            }
+            ]{\includegraphics[width=0.8\linewidth]{figs/stills/voter_rho4_eta5.0/tmid.png}}{VPlayer.swf}
+    \end{column}
+  \end{columns}
+\end{frame}
+\else
+
+\begin{frame}{Votante: respuesta al ruido}
+  \begin{columns}[T]
+    \begin{column}{0.50\textwidth}
+      \centering{\small $\eta = 1\ten{-1},\space\rho = 4$}\par
+      \begin{figure}
+              \centering
+              \includegraphics[width=1\linewidth]{figs//stills//voter_rho4_eta0.1/tmid.png}
+                \caption*{\url{https://youtu.be/8HjF1fLD9lU}}        
+            \end{figure}
+    \end{column}
+    \begin{column}{0.50\textwidth}
+      \centering{\small $\eta = 5,\space\rho=4$}\par
+      \begin{figure}
+              \centering
+              \includegraphics[width=1\linewidth]{figs//stills//voter_rho4_eta5.0/tmid.png}
+                \caption*{\url{https://youtu.be/XdoeaQfUxXQ}}        
+            \end{figure}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\fi
+
+\begin{frame}{Votante: evolución temporal de $\va$}
+  \begin{cols}
+    \begin{column}{0.70\textwidth}
+      \figura{figuras_new/va_vs_t_voter_rho8.png}
+    \end{column}
+    \begin{column}{0.30\textwidth}
+      \begin{parametros}
+        \item $\rho = 8$
+      \end{parametros}
+    \end{column}
+  \end{cols}
+\end{frame}
+
+
+\begin{frame}{Votante: respuesta al ruido de $v_{a}$}
+    \centering{
+    \figura{figuras_new/va_vs_eta_voter.png}
+    }
+\end {frame}
+
+
+\begin{frame}{Votante: evolución temporal de $S$}
+      \begin{cols}
+    \begin{column}{0.70\textwidth}
+      \figura{figuras_new/s_vs_t_voter_rho1_3pi.png}
+    \end{column}
+    \begin{column}{0.30\textwidth}
+      \begin{parametros}
+        \item $\rho =\frac{1}{3\pi} $
+      \end{parametros}
+    \end{column}
+  \end{cols}
+\end{frame}
+
+
+\begin{frame}{Votante: respuesta al ruido de $S$}
+    \centering{
+    \figura{figuras_new/s_vs_eta_voter_small_dens.png}
+    }
+\end {frame}
+
+
+\begin{frame}{Votante: polarización en función de la componente gigante}
+  \centering{
+      \figura{figuras_new/va_vs_s_voter.png}
+    }
+\end{frame}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%% COMPARACIONES %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\begin{frame}{Votante vs. Vicsek: respuesta al ruido de $\va$}
+    \centering{
+      \figura{figuras_new/va_vs_eta.png}
+      }
+\end{frame}
+
+\begin{frame}{Votante vs. Vicsek: respuesta al ruido de $S$}
+  \centering{
+      \figura{figuras_new/s_vs_eta.png}
+    }
+\end{frame}
+
+\begin{frame}{Votante vs. Vicsek: polarización en función de la componente gigante}
+  \centering{
+      \figura{figuras_new/va_vs_s_comparada.png}
+}
+\end{frame}
+
+\begin{frame}{Tiempos de ejecución del CIM}
+  \begin{cols}
+    \begin{column}{0.66\textwidth}
+      \figura{figuras_new/cim_comparison.png}
+    \end{column}
+    \begin{column}{0.32\textwidth}
+      \begin{parametros}
+        \item TP2: $L = 10$, \ $r_{c} = 1$
+        \item TP1: $L = 20$, \ $M = 13$ \ $0.23\leq r_i \leq 0.26$
+        \item $10$ realizaciones ambos, $10000$ pasos
+      \end{parametros}
+      \begin{resultado}
+      \item Razón TP2/TP1: $1.35-1.78$
+      \end{resultado}
+      \\
+      \vspace{4pt}
+      {\footnotesize Observable: tiempo \emph{solo una} búsqueda vecinos.\par
+      }
+    \end{column}
+  \end{cols}
+\end{frame}
+
+\begin{frame}{Tiempos de ejecución del CIM}
+  \begin{cols}
+    \begin{column}{0.66\textwidth}
+      \figura{figuras_new/cim_comparison_same_dens.png}
+    \end{column}
+    \begin{column}{0.32\textwidth}
+      \begin{parametros}
+        \item TP2: $L = 10$, \ $r_{c} = 1$
+        \item TP1: $L = 10$, \ $M = 10$
+        \item Ambos partículas puntuales
+ \item $10$ realizaciones ambos, $10000$ pasos 
+ \end{parametros}
+       \begin{resultado}
+      \item Razón TP2/TP1: $1.03-1.20$
+      \end{resultado}
+      \\
+      \vspace{4pt}
+      {\footnotesize Observable: tiempo \emph{solo una} búsqueda vecinos.\par
+      }
+    \end{column}
+  \end{cols}
+\end{frame}
+\begin{frame}{Conclusiones}
+  \begin{itemize}\setlength{\itemsep}{14pt}
+\item \textbf{Mayor ruido decrece} observable de forma monótona y continua.
+
+\item \textbf{$v_a$}: mayor densidad \textbf{aumenta} observable en Vicsek, \textbf{disminuye} en votante. 
+
+\item \textbf{$S$}: comportamiento similar, pero convergencia a mismo valor (distintas $\rho$). 
+
+\item $v_a$ y $S$: mismo ruido, mayor $v_a$ para Vicsek.
+
+\item \textbf{Vicsek: mayor tolerancia al ruido} para $v_a$ y $S$ (menor diferencia).
+
+\item Ejecuciones CIM: 78\% parámetros por defecto, \textbf{20\% para mismas condiciones} (peor caso).
+
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[plain,noframenumbering]
+  \vfill\centering{\Huge\usebeamercolor[fg]{structure}Muchas gracias}\vfill
+\end{frame}
+
+\end{document}

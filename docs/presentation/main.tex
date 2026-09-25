@@ -11,8 +11,8 @@
 \showvideotrue
 %% cambiar para mostrar las animaciones embebdidas o los stills$$
 
-\title[TP2]{Trabajo Práctico Nro. 3}
-\subtitle{Simulación Dirigida por Eventos}
+\title[TP2]{Trabajo Práctico Nro. 3: Simulación Dirigida por Eventos}
+\subtitle{Colisiones entre partículas}
 \author[Grupo 03]{Matías Leporini \and Camila Lee \and Ana Negre}
 \institute{
 Instituto Tecnológico de Buenos Aires (ITBA)\\
@@ -33,28 +33,28 @@ Instituto Tecnológico de Buenos Aires (ITBA)\\
 \begin{frame}{Modelo}
   \begin{columns}[T]
     \begin{column}{0.56\textwidth}
-      \textbf{Evolución temporal}\par\vspace{4pt}
+      \textbf{Partículas}\par\vspace{4pt}
       \setlength{\abovedisplayskip}{0pt}\setlength{\abovedisplayshortskip}{0pt}
       \begin{align}
-        \vv{x}_i(t+1) &= \vv{x}_i(t) + \vv{v}_i(t)\,\Delta t \\[2pt]
-        \theta(t+1) &= \langle \theta(t) \rangle_{r_{c}} + \Delta\theta \\[2pt]
-        \theta(t+1) &= \theta_j(t) + \Delta\theta
+        \vv{r}_i(t+\Delta t) &= \vv{r}_i(t) + \vv{v}_i(t)\,\Delta t \\[2pt]
+        \vv{v}_i(t+\Delta t) &= \vv{v}_i(t) \\[4pt]
+        \left|\vv{r}_j-\vv{r}_i\right| &= r_i+r_j
       \end{align}
     \end{column}
     \begin{column}{0.42\textwidth}
     
-      \textbf{}\par\vspace{4pt}
+      \textbf{Colisiones}\par\vspace{4pt}
+      \setlength{\abovedisplayskip}{0pt}\setlength{\abovedisplayshortskip}{0pt}
+      \begin{align}
+        \vv{v}_i' &= \vv{v}_i + \frac{J}{m_i}\,\vv{n} \\[2pt]
+        \vv{v}_j' &= \vv{v}_j - \frac{J}{m_j}\,\vv{n} \\[2pt]
+        J &= \frac{2m_i m_j}{m_i+m_j}
+        (\vv{v}_j-\vv{v}_i)\cdot\vv{n}
+      \end{align}
+      \vspace{-2pt}
       {\footnotesize
-      Ec.~(2), promedio de Vicsek:
-      \[ \langle \theta(t) \rangle_{r_{c}} = \operatorname{atan2}\!\left[
-         \langle \sin\theta(t) \rangle_{r_{c}},\ \langle \cos\theta(t) \rangle_{r_{c}} \right] \]
-      sobre las partículas dentro de $r_{c}$, incluyendo la propia.
-
-      \vspace{4pt}
-      Ec.~(3), votante: $j$ vecino elegido al azar.
-
-      \vspace{4pt}
-      $\Delta\theta$: ruido uniforme en $[-\eta/2,\ \eta/2]$.\par}
+      $\vv{n}=(\vv{r}_j-\vv{r}_i)/(r_i+r_j)$: normal de contacto.\\
+      Choques elásticos e instantáneos.}
     \end{column}
   \end{columns}
 \end{frame}
@@ -100,13 +100,21 @@ Instituto Tecnológico de Buenos Aires (ITBA)\\
   \begin{cols}
     \begin{column}{0.44\textwidth}
       \centering
-      \figura{figuras_new/sistema.png}
+      \figura{system.png}
     \end{column}
     \begin{column}{0.52\textwidth}
       \begin{parametros}[Parámetros fijos]
+        \item $M=0.68m$ 
+        \item $L=1.20m$
+        \item $d=0.20m$
+        \item $r = 0.0175 m$, radio partículas 
+        \item $m = 0.025 kg$, masa partículas
+        \item $|v_0|=1$
       \end{parametros}
       \vspace{4pt}
       \begin{parametros}[Parámetros variables]
+       \item $N$, cantidad partículas 
+       \item $n, R_k, x_k, y_k$ de obstáculos
         
       \end{parametros}
     \end{column}

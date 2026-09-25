@@ -125,31 +125,26 @@ Instituto Tecnológico de Buenos Aires (ITBA)\\
       \textbf{Observables primarios}\par\vspace{6pt}
       \small
       \begin{itemize}\setlength{\itemsep}{12pt}
-        \item Parámetro de orden:
-              \[ \va(t) = \frac{1}{N\,v}\left| \sum_{i=1}^{N} \vv{v}_i(t) \right| \]
-              {\footnotesize 0: desorden total. \ 1: polarización total.}
-        \item Coficiente de difusión:
-              \[ S(t) = \frac{\left| \mathcal{C}(t) \right|}{N} \]
-              {\footnotesize $\mathcal{C}$: mayor cluster; vecinos a distancia $< r_{c}$
-              encadenados.}
+        \item Fracción de partículas usadas:
+              \[ F_u(t) = \frac{N_g(t)}{N} \]
+        \item Desplazamiento cuadrático medio:
+              \[ \langle\Delta r^{2}\rangle(t)
+                 = \frac{1}{N}\sum_{i=1}^{N}
+                   \left|\vv{r}_i(t)-\vv{r}_i(0)\right|^{2} \]
       \end{itemize}
     \end{column}
     \begin{column}{0.42\textwidth}
       \textbf{Observables escalares}\par\vspace{6pt}
       \small
       \begin{itemize}\setlength{\itemsep}{12pt}
-        \item Promedio en el estacionario, dentro de cada realización:
-              \[ \langle \va \rangle_{\text{realiz.}} =
-                 \big\langle\, \va(t) \,\big\rangle_{t \geq t^{*}} \]
+        \item $t_{90}$:
+              \[ t_{90} = \min\{t : F_u(t) \geq 0.9\} \]
         \item Promedio entre las realizaciones:
-              \[ \langle \va \rangle = \big\langle\, \langle \va \rangle_{\text{realiz.}}
-                 \,\big\rangle_{10\ \text{realiz.}} \]
-        \item Ídem con $S(t)$
+              \[ \langle t_{90}\rangle = \frac{1}{n}\sum_{k=1}^{n} t_{90,k} \]
+        \item $\langle\Delta r^{2}\rangle = b + 4Dt$
       \end{itemize}
       \vspace{6pt}
-      {\footnotesize Barra de error: desvío entre totalidad de puntos a partir $t^{*}$}
-      \par
-      $t^{*}$ se fija en relación a la evolución temporal
+      {\footnotesize Barra de error: desvío estándar muestral.}
     \end{column}
   \end{columns}
 \end{frame}

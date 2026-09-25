@@ -249,6 +249,7 @@ Instituto Tecnológico de Buenos Aires (ITBA)\\
       \item $L = 1.20\,\mathrm{m}$, \ $M = 0.68\,\mathrm{m}$
       \item $d = 0.20\,\mathrm{m}$
       \item $t_{\max} = 100\,\mathrm{s}$
+      \item $k = 300$
     \end{parametros}
   \end{minipage}
 \end{frame}
@@ -289,40 +290,21 @@ Instituto Tecnológico de Buenos Aires (ITBA)\\
 \end{frame}
 
 \begin{frame}{Evolución temporal}
-  \begin{cols}
-    \begin{column}{0.72\textwidth}
-      \animacion{disco}{0}{0}{10}{disco_r034.png}{}
-    \end{column}
-    \begin{column}{0.26\textwidth}
-      \begin{parametros}
-        \item $N = 100$
-        \item $t_{\max} = 30\,\mathrm{s}$
-        \item $k = 300$
-      \end{parametros}
-    \end{column}
-  \end{cols}
+  \centering
+  \animacion{disco}{0}{0}{10}{disco_r034.png}{}
 \end{frame}
 
 \begin{frame}{Evolución de la fracción de partículas usadas}
-  \begin{cols}
-    \begin{column}{0.72\textwidth}
-      \figura{fu_disco.png}
-    \end{column}
-    \begin{column}{0.26\textwidth}
-      \begin{parametros}
-        \item $N = 100$
-        \item $t_{\max} = 30\,\mathrm{s}$
-      \end{parametros}
-    \end{column}
-  \end{cols}
+  \centering
+  \figura{fu_disco.png}
 \end{frame}
 
 \begin{frame}{$\langle t_{90}\rangle$ en función del radio}
   \begin{cols}
-    \begin{column}{0.66\textwidth}
+    \begin{column}{0.62\textwidth}
       \figura{disco_radio.png}
     \end{column}
-    \begin{column}{0.32\textwidth}
+    \begin{column}{0.34\textwidth}
       \begin{parametros}
         \item Centro fijo en $(0.60,\ 0.34)\,\mathrm{m}$
         \item $R$ de $0.06\,\mathrm{m}$ a $0.34\,\mathrm{m}$
@@ -351,13 +333,12 @@ Instituto Tecnológico de Buenos Aires (ITBA)\\
 
 \begin{frame}{$\langle t_{90}\rangle$ en función de las columnas, $R = 0.035\,\mathrm{m}$}
   \begin{cols}
-    \begin{column}{0.66\textwidth}
+    \begin{column}{0.62\textwidth}
       \figura{pared_cols_grandes.png}
     \end{column}
-    \begin{column}{0.32\textwidth}
+    \begin{column}{0.34\textwidth}
       \begin{parametros}
         \item $R = 0.035\,\mathrm{m}$
-        \item Hueco $6.3\,\mathrm{mm} < 2r$
         \item Centro $x = 0.60\,\mathrm{m}$
       \end{parametros}
     \end{column}
@@ -372,7 +353,7 @@ Instituto Tecnológico de Buenos Aires (ITBA)\\
     \begin{column}{0.34\textwidth}
       \begin{parametros}
         \item 9 columnas
-        \item Ancho $0.68\,\mathrm{m}$
+        \item Ancho $= M$
         \item Centro $x = 0.60\,\mathrm{m}$
       \end{parametros}
       \begin{resultado}
@@ -391,7 +372,7 @@ Instituto Tecnológico de Buenos Aires (ITBA)\\
       \begin{parametros}
         \item 18 columnas
         \item Ancho $0.644\,\mathrm{m}$
-        \item $R = 0.0175\,\mathrm{m}$
+        \item $R = r$
         \item Centro $x = 0.60\,\mathrm{m}$
       \end{parametros}
       \begin{resultado}
@@ -402,42 +383,23 @@ Instituto Tecnológico de Buenos Aires (ITBA)\\
 \end{frame}
 
 \begin{frame}{Evolución temporal}
-  \begin{cols}
-    \begin{column}{0.72\textwidth}
-      \animacion{pared}{0}{0}{10}{pared_18_anim.png}{}
-    \end{column}
-    \begin{column}{0.26\textwidth}
-      \begin{parametros}
-        \item $N = 100$
-        \item $t_{\max} = 30\,\mathrm{s}$
-        \item $k = 300$
-      \end{parametros}
-    \end{column}
-  \end{cols}
+  \centering
+  \animacion{pared}{0}{0}{10}{pared_18_anim.png}{}
 \end{frame}
 
 \begin{frame}{Evolución de la fracción de partículas usadas}
-  \begin{cols}
-    \begin{column}{0.72\textwidth}
-      \figura{fu_ganador.png}
-    \end{column}
-    \begin{column}{0.26\textwidth}
-      \begin{parametros}
-        \item $N = 100$
-        \item $t_{\max} = 30\,\mathrm{s}$
-      \end{parametros}
-    \end{column}
-  \end{cols}
+  \centering
+  \figura{fu_ganador.png}
 \end{frame}
 
 \begin{frame}{$\langle t_{90}\rangle$ en función de las columnas, $R = r$}
   \begin{cols}
-    \begin{column}{0.66\textwidth}
+    \begin{column}{0.62\textwidth}
       \figura{pared_columnas.png}
     \end{column}
-    \begin{column}{0.32\textwidth}
+    \begin{column}{0.34\textwidth}
       \begin{parametros}
-        \item $R = r = 0.0175\,\mathrm{m}$
+        \item $R = r$
         \item Centro $x = 0.60\,\mathrm{m}$
       \end{parametros}
     \end{column}

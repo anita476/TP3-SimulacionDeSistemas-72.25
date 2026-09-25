@@ -78,8 +78,8 @@ def make_figure(traj: Traj, arrows: bool = False, inset: bool = False):
         ax = fig.add_axes([0.15, 0.47, 0.83, 0.47])
         ax_in = fig.add_axes([0.15, 0.08, 0.83, 0.16])
     else:
-        fig = plt.figure(figsize=(10.0, 7.2))
-        ax = fig.add_axes([0.11, 0.27, 0.87, 0.66])
+        fig = plt.figure(figsize=(10.0, 6.6))
+        ax = fig.add_axes([0.12, 0.22, 0.84, 0.70])
         ax_in = None
     ax.set_xlim(-margin, L + margin)
     ax.set_ylim(-margin, W + margin)
@@ -138,7 +138,7 @@ def make_figure(traj: Traj, arrows: bool = False, inset: bool = False):
             handles,
             labels,
             loc="upper center",
-            bbox_to_anchor=(0.5, -0.22),
+            bbox_to_anchor=(0.5, -0.18),
             ncol=3,
             frameon=True,
             fancybox=False,

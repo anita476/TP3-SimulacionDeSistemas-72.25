@@ -242,7 +242,7 @@ Instituto Tecnológico de Buenos Aires (ITBA)\\
 \begin{frame}{Parámetros fijos}
   \centering
   \begin{minipage}{0.55\textwidth}
-    \begin{parametros}[Fijos]
+    \begin{parametros}
       \item $N = 100$
       \item $|v_0| = 1\,\mathrm{m/s}$
       \item $r = 0.0175\,\mathrm{m}$, \ $m = 0.025\,\mathrm{kg}$
@@ -289,13 +289,32 @@ Instituto Tecnológico de Buenos Aires (ITBA)\\
 \end{frame}
 
 \begin{frame}{Evolución temporal}
-  \centering
-  \animacion{disco}{0}{0}{10}{disco_r034.png}{}
+  \begin{cols}
+    \begin{column}{0.72\textwidth}
+      \animacion{disco}{0}{0}{10}{disco_r034.png}{}
+    \end{column}
+    \begin{column}{0.26\textwidth}
+      \begin{parametros}
+        \item $N = 100$
+        \item $t_{\max} = 30\,\mathrm{s}$
+        \item $k = 300$
+      \end{parametros}
+    \end{column}
+  \end{cols}
 \end{frame}
 
 \begin{frame}{Evolución de la fracción de partículas usadas}
-  \centering
-  \figura{fu_disco.png}
+  \begin{cols}
+    \begin{column}{0.72\textwidth}
+      \figura{fu_disco.png}
+    \end{column}
+    \begin{column}{0.26\textwidth}
+      \begin{parametros}
+        \item $N = 100$
+        \item $t_{\max} = 30\,\mathrm{s}$
+      \end{parametros}
+    \end{column}
+  \end{cols}
 \end{frame}
 
 \begin{frame}{$\langle t_{90}\rangle$ en función del radio}
@@ -363,21 +382,6 @@ Instituto Tecnológico de Buenos Aires (ITBA)\\
   \end{cols}
 \end{frame}
 
-\begin{frame}{$\langle t_{90}\rangle$ en función de las columnas, $R = r$}
-  \begin{cols}
-    \begin{column}{0.66\textwidth}
-      \figura{pared_columnas.png}
-    \end{column}
-    \begin{column}{0.32\textwidth}
-      \begin{parametros}
-        \item $R = r = 0.0175\,\mathrm{m}$
-        \item Hueco $0.8\,\mathrm{mm}$
-        \item Centro $x = 0.60\,\mathrm{m}$
-      \end{parametros}
-    \end{column}
-  \end{cols}
-\end{frame}
-
 \begin{frame}{Configuración de menor $\langle t_{90}\rangle$}
   \begin{cols}
     \begin{column}{0.62\textwidth}
@@ -398,13 +402,46 @@ Instituto Tecnológico de Buenos Aires (ITBA)\\
 \end{frame}
 
 \begin{frame}{Evolución temporal}
-  \centering
-  \animacion{pared}{0}{0}{10}{pared_18_anim.png}{}
+  \begin{cols}
+    \begin{column}{0.72\textwidth}
+      \animacion{pared}{0}{0}{10}{pared_18_anim.png}{}
+    \end{column}
+    \begin{column}{0.26\textwidth}
+      \begin{parametros}
+        \item $N = 100$
+        \item $t_{\max} = 30\,\mathrm{s}$
+        \item $k = 300$
+      \end{parametros}
+    \end{column}
+  \end{cols}
 \end{frame}
 
 \begin{frame}{Evolución de la fracción de partículas usadas}
-  \centering
-  \figura{fu_ganador.png}
+  \begin{cols}
+    \begin{column}{0.72\textwidth}
+      \figura{fu_ganador.png}
+    \end{column}
+    \begin{column}{0.26\textwidth}
+      \begin{parametros}
+        \item $N = 100$
+        \item $t_{\max} = 30\,\mathrm{s}$
+      \end{parametros}
+    \end{column}
+  \end{cols}
+\end{frame}
+
+\begin{frame}{$\langle t_{90}\rangle$ en función de las columnas, $R = r$}
+  \begin{cols}
+    \begin{column}{0.66\textwidth}
+      \figura{pared_columnas.png}
+    \end{column}
+    \begin{column}{0.32\textwidth}
+      \begin{parametros}
+        \item $R = r = 0.0175\,\mathrm{m}$
+        \item Centro $x = 0.60\,\mathrm{m}$
+      \end{parametros}
+    \end{column}
+  \end{cols}
 \end{frame}
 
 

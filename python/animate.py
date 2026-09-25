@@ -20,7 +20,7 @@ se escriben al costado de la figura en la diapositiva. Ejes con nombre en
 palabras, con la terminología del enunciado (largo, ancho, arco, fresca,
 usada, fracción de partículas usadas) y unidad MKS entre paréntesis; toda letra y número dentro de la
 figura a 20 pt o más; escalares en itálica, unidades sin itálica. La
-leyenda va adentro de los ejes. El video es la misma figura que el PNG.
+leyenda va adentro de los ejes solo si entra sin tapar la mesa. El video es la misma figura que el PNG.
 
 --inset   agrega un inset con Fu(t) que crece con la animación.
 --arrows  flechas de velocidad (exactas: vx, vy del cuadro). Útil con pocas
@@ -116,25 +116,33 @@ def make_figure(traj: Traj, arrows: bool = False, inset: bool = False):
         quiver = ax.quiver(xs, ys, us, vs, angles="xy", scale_units="xy", scale=1.0 / ARROW_SCALE,
                            color="black", width=0.003, zorder=5)
 
-    # Leyenda: adentro, en la esquina que quede libre durante TODA la animación;
-    # si ninguna queda libre, debajo de los ejes. Para decidirlo se cargan
-    # temporalmente las posiciones de todos los cuadros (submuestreados).
+    # Adentro solo si hay una esquina libre en todos los cuadros. Si no, debajo.
     ax.plot([], [], linestyle="none", marker="o", color=FRESH, markeredgecolor="black", label="fresca")
     ax.plot([], [], linestyle="none", marker="o", color=USED, markeredgecolor="black", label="usada")
     ax.plot([], [], linestyle="none", marker="o", color=OBSTACLE, markeredgecolor="black", label="obstáculo")
     step = max(1, len(traj.frames) // 200)
-    probe = ax.scatter([p[0] for f in traj.frames[::step] for p in f.particles],
-                       [p[1] for f in traj.frames[::step] for p in f.particles], s=0, alpha=0.0)
+    probe = ax.scatter(
+        [p[0] for f in traj.frames[::step] for p in f.particles],
+        [p[1] for f in traj.frames[::step] for p in f.particles],
+        s=0,
+        alpha=0.0,
+    )
     corner = legend_corner(ax)
     probe.remove()
     handles, labels = ax.get_legend_handles_labels()
     if corner is not None:
-        legend = ax.legend(handles, labels, loc=corner, frameon=True, framealpha=0.92, labelspacing=0.25)
-        legend.set_in_layout(False)
+        legend = ax.legend(handles, labels, loc=corner, frameon=True, framealpha=0.92, fancybox=False)
         legend.set_zorder(20)
     else:
-        ax.legend(handles, labels, loc="upper center", bbox_to_anchor=(0.5, -0.22), ncol=3,
-                  frameon=True, fancybox=False)
+        ax.legend(
+            handles,
+            labels,
+            loc="upper center",
+            bbox_to_anchor=(0.5, -0.22),
+            ncol=3,
+            frameon=True,
+            fancybox=False,
+        )
 
     # Inset Fu(t) opcional: escalera exacta de los cuadros de gol, hasta el cuadro actual.
     fu_line = fu_dot = None

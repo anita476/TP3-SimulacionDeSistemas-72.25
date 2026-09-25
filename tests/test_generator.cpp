@@ -10,6 +10,9 @@ int main() {
   const double L = base.L, W = base.W, r = base.r;
   constexpr double kPi = 3.14159265358979323846;
 
+  // Sin semilla fija por defecto: 0 significa auto/random.
+  CHECK(base.seed == 0);
+
   // N = 100 en la mesa vacía: dentro de la caja, sin solapamiento, |v| = v0,
   {
     GeneratorConfig cfg = base;

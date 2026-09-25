@@ -14,7 +14,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "lib"))
 import matplotlib
 from matplotlib.patches import Circle, Rectangle
 
-from plot_style import GREEN, apply_academic_style, save_figure, style_axes
+from plot_style import GREEN, apply_academic_style, legend_corner, save_figure, style_axes
 
 L = 1.20
 W = 0.68
@@ -52,7 +52,6 @@ def main() -> None:
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
-    # Ejes fijos: la mesa es más ancha que alta y la leyenda va debajo del rótulo.
     fig = plt.figure(figsize=(10.0, 7.6))
     ax = fig.add_axes([0.11, 0.30, 0.86, 0.64])
     margin = 0.06
@@ -68,8 +67,20 @@ def main() -> None:
     for x, y, radius in discs:
         ax.add_patch(Circle((x, y), radius, fc=OBSTACLE, ec="black", lw=0.8, zorder=2))
     ax.plot([], [], linestyle="none", marker="o", color=OBSTACLE, markeredgecolor="black", label="obstáculo")
-    # Justo debajo del rótulo. Más abajo deja un hueco grande; adentro tapa el borde.
-    ax.legend(loc="upper center", bbox_to_anchor=(0.5, -0.16), ncol=2, frameon=True, fancybox=False)
+    handles, labels = ax.get_legend_handles_labels()
+    corner = legend_corner(ax)
+    if corner is not None:
+        ax.legend(handles, labels, loc=corner, frameon=True, fancybox=False, framealpha=0.92)
+    else:
+        ax.legend(
+            handles,
+            labels,
+            loc="upper center",
+            bbox_to_anchor=(0.5, -0.16),
+            ncol=2,
+            frameon=True,
+            fancybox=False,
+        )
     save_figure(fig, args.output)
 
 

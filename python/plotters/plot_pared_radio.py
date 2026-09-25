@@ -39,9 +39,9 @@ def main() -> None:
     ax.axhline(chosen_mean, color="0.25", linestyle=":", zorder=1, label="elegida")
     style_axes(ax, "columnas", r"tiempo $t_{90}$ (s)")
     ax.set_ylim(8, 28)
-    # La línea vacía separa el rótulo de la leyenda sin achicar el gráfico.
-    ax.set_xlabel("columnas\n")
-    place_legend_below(ax, ncol=3)
+    legend = place_legend_below(ax, ncol=3)
+    if legend is not None and legend.axes is None:
+        ax.set_xlabel("columnas\n")
     save_figure(fig, OUTPUT)
 
 

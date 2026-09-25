@@ -79,6 +79,8 @@ def new_figure():
 def style_axes(ax, xlabel: str, ylabel: str) -> None:
     ax.set_xlabel(xlabel, labelpad=10)
     ax.set_ylabel(ylabel, labelpad=10)
+    ax.xaxis.label.set_clip_on(False)
+    ax.yaxis.label.set_clip_on(False)
     ax.grid(False)
     ax.tick_params(axis="both", which="major", direction="out", top=False, right=False)
     ax.minorticks_off()
@@ -165,7 +167,8 @@ def legend_corner(ax) -> str | None:
         fig.canvas.draw()
         bbox = legend.get_window_extent().transformed(ax.transAxes.inverted())
         legend.remove()
-        scored.append((_hits(bbox, points, boxes), loc))
+        spills = bbox.x0 < 0.0 or bbox.y0 < 0.0 or bbox.x1 > 1.0 or bbox.y1 > 1.0
+        scored.append((10_000 if spills else _hits(bbox, points, boxes), loc))
     scored.sort(key=lambda item: (item[0], _CORNERS.index(item[1])))
     hits, loc = scored[0]
     return loc if hits <= _HITS_MAX else None

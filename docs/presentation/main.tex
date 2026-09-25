@@ -11,14 +11,14 @@
 \showvideotrue
 %% cambiar para mostrar las animaciones embebdidas o los stills$$
 
-\title[TP2]{Trabajo Práctico Nro. 2: Autómatas Celulares}
-\subtitle{Autómata Off-Lattice: Bandadas de agentes autopropulsados}
+\title[TP2]{Trabajo Práctico Nro. 3}
+\subtitle{Simulación Dirigida por Eventos}
 \author[Grupo 03]{Matías Leporini \and Camila Lee \and Ana Negre}
 \institute{
 Instituto Tecnológico de Buenos Aires (ITBA)\\
 72.25 - Simulación de Sistemas
 }
-\date{4 de septiembre de 2026}
+\date{28 de septiembre de 2026}
 
 \begin{document}
 
@@ -62,66 +62,36 @@ Instituto Tecnológico de Buenos Aires (ITBA)\\
 \section{Implementación}
 
 \begin{frame}{Arquitectura del motor}
-    \centering
-    \begin{columns}
-        \begin{column}{0.75\textwidth}
-            \begin{figure}
-                \centering
-            \includegraphics[width=1\linewidth]{uml_system_small.png}
-            \end{figure}
-        \end{column}
-        \begin{column}{0.25\textwidth}
-            \begin{itemize}
-                \item Motor hecho en C++
-                \item Cluster y OffLattice independientes 
-            \end{itemize}
-        \end{column}
-    \end{columns}
+  \begin{columns}[T,onlytextwidth]
+    \begin{column}{0.72\textwidth}
+      \centering
+      \includegraphics[width=\linewidth,height=0.68\textheight,keepaspectratio]{images/uml.png}
+    \end{column}
+    \begin{column}{0.28\textwidth}
+      \begin{itemize}
+        \item Motor hecho en C++
+        \item Cola con prioridad por tiempo de evento
+      \end{itemize}
+    \end{column}
+  \end{columns}
 \end{frame}
 
-\begin{frame}{Paso de simulación}
-  \begin{center}
-    \begin{minipage}{0.85\textwidth}
-      \scriptsize
-      \begin{algorithmic}[1]
-
-        \For{$t = 0,\ldots,T-1$}
-
-          \State $\mathcal{V} \gets$ calcular vecinos mediante CIM
-
-          \For{$i = 1,\ldots,N$}
-
-            \If{el modelo es Vicsek}
-              \State $\bar{\theta} \gets
-              \operatorname{atan2}\left(
-              \sum\limits_{j \in \mathcal{V}_i \cup \{i\}}
-              \sin(\theta_j),
-              \sum\limits_{j \in \mathcal{V}_i \cup \{i\}}
-              \cos(\theta_j)
-              \right)$
-            \EndIf
-
-            \If{el modelo es votante}
-              \State elegir $k \in \mathcal{V}_i$ al azar
-              \State $\bar{\theta} \gets \theta_k$
-            \EndIf
-
-            \State $\theta_i^{\mathrm{nuevo}}
-            \gets \bar{\theta} + \Delta\theta$
-
-          \EndFor
-
-          \For{$i = 1,\ldots,N$}
-            \State $\vv{x}_i \gets
-            \left(\vv{x}_i + \vv{v}_i \Delta t\right) \bmod L$
-            \State $\theta_i \gets \theta_i^{\mathrm{nuevo}}$
-          \EndFor
-
-        \EndFor
-
-      \end{algorithmic}
-    \end{minipage}
-  \end{center}
+\begin{frame}{Simulación}
+  \scriptsize
+  \begin{algorithmic}[1]
+    \State Inicializar $t$, partículas y cola de eventos $Q$
+    \While{$Q \neq \emptyset$ y $\Call{top}{Q}.t \leq t_{\max}$}
+      \State $e \gets \Call{pop}{Q}$
+      \If{\Call{válido}{$e$}}
+        \State Avanzar todas las partículas hasta $e.t$
+        \State Resolver $e$ y actualizar velocidades
+        \State Actualizar estadísticas y goles
+        \State Recalcular eventos de las partículas afectadas
+      \Else
+        \State Descartar $e$ (predicción obsoleta)
+      \EndIf
+    \EndWhile
+  \end{algorithmic}
 \end{frame}
 
 \section{Simulaciones}
@@ -134,16 +104,10 @@ Instituto Tecnológico de Buenos Aires (ITBA)\\
     \end{column}
     \begin{column}{0.52\textwidth}
       \begin{parametros}[Parámetros fijos]
-        \item $L = 10$, \ $r_{c} = 1$, condiciones periódicas de contorno
-        \item $v = 3\ten{-2}$ igual para todas, \ $\Delta t = 1$
-        \item $\vv{x}_i$ y $\theta_i$ iniciales uniformes
-        \item 10 realizaciones de $T = 1\ten{4}$ pasos, con semilla distinta
       \end{parametros}
       \vspace{4pt}
       \begin{parametros}[Parámetros variables]
-        \item $\rho \in [1/(3\pi), 8]$ con $N = \rho L^{2}$
-        \item $\eta \in [0,\ 6]$ 
-        \item Regla de interacción: Vicsek o votante
+        
       \end{parametros}
     \end{column}
   \end{cols}
@@ -158,7 +122,7 @@ Instituto Tecnológico de Buenos Aires (ITBA)\\
         \item Parámetro de orden:
               \[ \va(t) = \frac{1}{N\,v}\left| \sum_{i=1}^{N} \vv{v}_i(t) \right| \]
               {\footnotesize 0: desorden total. \ 1: polarización total.}
-        \item Fracción en la componente gigante:
+        \item Coficiente de difusión:
               \[ S(t) = \frac{\left| \mathcal{C}(t) \right|}{N} \]
               {\footnotesize $\mathcal{C}$: mayor cluster; vecinos a distancia $< r_{c}$
               encadenados.}
@@ -183,35 +147,6 @@ Instituto Tecnológico de Buenos Aires (ITBA)\\
     \end{column}
   \end{columns}
 \end{frame}
-
-
-\begin{frame}{Observables: cálculo de $S$}
-    \centering{
-      \scriptsize
-      \begin{algorithmic}[1]
-        \State Obtener las posiciones de las partículas en el tiempo $t$
-        \State Construir la lista de vecinos $vecinos[i]$
-
-        \State $clusters \gets \emptyset$
-        \State Marcar todas las partículas como no visitadas
-
-        \ForAll{partícula $i$ no visitada}
-          \State Crear un cluster vacío
-          \State Explorar $i$ y sus vecinos
-          \State Agregar al cluster todas las partículas conectadas
-          \State Marcar las partículas como visitadas
-          \State Agregar el cluster a $clusters$
-        \EndFor
-
-        \State $N \gets$ cantidad total de partículas
-        \State $N_{\max} \gets$ tamaño del cluster más grande
-        \State $S(t) \gets N_{\max}/N$
-
-        \State \Return $clusters$, $S(t)$
-      \end{algorithmic}
-      }
-\end{frame}
-
 
 
 
@@ -276,7 +211,7 @@ Instituto Tecnológico de Buenos Aires (ITBA)\\
 \fi
 
 
-\begin{frame}{Vicsek: evolución temporal de $\va$}
+\begin{frame}{Evolución temporal de $\va$}
   \begin{cols}
     \begin{column}{0.70\textwidth}
       \figura{figuras_new/va_vs_t_vicsek_rho8.png}
@@ -289,184 +224,13 @@ Instituto Tecnológico de Buenos Aires (ITBA)\\
   \end{cols}
 \end{frame}
 
-\begin{frame}{Vicsek: respuesta al ruido de $\va$}
-  \centering{
-      \figura{figuras_new/va_vs_eta_vicsek.png}
-    }
-\end{frame}
 
-\begin{frame}{Vicsek: evolución temporal de $S$}
-  \begin{cols}
-    \begin{column}{0.70\textwidth}
-      \figura{figuras_new/s_vs_t_vicsek_rho2.png}
-    \end{column}
-    \begin{column}{0.28\textwidth}
-      \begin{parametros}
-        \item $\rho = 2$
-      \end{parametros}
-      \vspace{4pt}
-      {\footnotesize \par}
-    \end{column}
-  \end{cols}
-\end{frame}
-
-\begin{frame}{Vicsek: evolución temporal de $S$}
-  \begin{cols}
-    \begin{column}{0.70\textwidth}
-      \figura{figuras_new/s_vs_t_vicsek_rho1_3pi.png}
-    \end{column}
-    \begin{column}{0.28\textwidth}
-      \begin{parametros}
-        \item $\rho = \frac{1}{3\pi}$
-      \end{parametros}
-      \vspace{4pt}
-      {\footnotesize \par}
-    \end{column}
-  \end{cols}
-\end{frame}
-
-\begin{frame}{Vicsek: respuesta al ruido de $S$}
-    \centering{
-      \figura{figuras_new/s_vs_eta_vicsek_small_dens.png}
-      }
-\end{frame}
-
-
-\begin{frame}{Vicsek: polarización en función de la componente gigante}
-    \centering{
-      \figura{figuras_new/va_vs_s_vicsek.png}
-    }
-\end{frame}
-
-
-\ifshowvideo
-\begin{frame}{Votante: respuesta al ruido}
-  \begin{columns}[T]
-    \begin{column}{0.50\textwidth}
-      \centering{\small $\eta = 1\ten{-1},\space\rho = 4$}\par
-      \includemedia[
-            width=0.8\linewidth,
-            height=0.6\linewidth,
-            activate=onclick,
-            addresource=animaciones/voter_rho4_eta0.1.mp4,
-            flashvars={
-                    source=animaciones/voter_rho4_eta0.1.mp4
-                    &autoPlay=false
-                    &loop=true
-            }
-            ]{\includegraphics[width=0.8\linewidth]{figs/stills/voter_rho4_eta0.1/tmid.png}}{VPlayer.swf}
-    \end{column}
-    \begin{column}{0.50\textwidth}
-      \centering{\small $\eta = 5,\space\rho = 4$}\par
-      \includemedia[
-            width=0.8\linewidth,
-            height=0.6\linewidth,
-            activate=onclick,
-            addresource=animaciones/voter_rho4_eta5.0.mp4,
-            flashvars={
-                    source=animaciones/voter_rho4_eta5.0.mp4
-                    &autoPlay=false
-                    &loop=true
-            }
-            ]{\includegraphics[width=0.8\linewidth]{figs/stills/voter_rho4_eta5.0/tmid.png}}{VPlayer.swf}
-    \end{column}
-  \end{columns}
-\end{frame}
-\else
-
-\begin{frame}{Votante: respuesta al ruido}
-  \begin{columns}[T]
-    \begin{column}{0.50\textwidth}
-      \centering{\small $\eta = 1\ten{-1},\space\rho = 4$}\par
-      \begin{figure}
-              \centering
-              \includegraphics[width=1\linewidth]{figs//stills//voter_rho4_eta0.1/tmid.png}
-                \caption*{\url{https://youtu.be/8HjF1fLD9lU}}        
-            \end{figure}
-    \end{column}
-    \begin{column}{0.50\textwidth}
-      \centering{\small $\eta = 5,\space\rho=4$}\par
-      \begin{figure}
-              \centering
-              \includegraphics[width=1\linewidth]{figs//stills//voter_rho4_eta5.0/tmid.png}
-                \caption*{\url{https://youtu.be/XdoeaQfUxXQ}}        
-            \end{figure}
-    \end{column}
-  \end{columns}
-\end{frame}
-
-\fi
-
-\begin{frame}{Votante: evolución temporal de $\va$}
-  \begin{cols}
-    \begin{column}{0.70\textwidth}
-      \figura{figuras_new/va_vs_t_voter_rho8.png}
-    \end{column}
-    \begin{column}{0.30\textwidth}
-      \begin{parametros}
-        \item $\rho = 8$
-      \end{parametros}
-    \end{column}
-  \end{cols}
-\end{frame}
-
-
-\begin{frame}{Votante: respuesta al ruido de $v_{a}$}
-    \centering{
-    \figura{figuras_new/va_vs_eta_voter.png}
-    }
-\end {frame}
-
-
-\begin{frame}{Votante: evolución temporal de $S$}
-      \begin{cols}
-    \begin{column}{0.70\textwidth}
-      \figura{figuras_new/s_vs_t_voter_rho1_3pi.png}
-    \end{column}
-    \begin{column}{0.30\textwidth}
-      \begin{parametros}
-        \item $\rho =\frac{1}{3\pi} $
-      \end{parametros}
-    \end{column}
-  \end{cols}
-\end{frame}
-
-
-\begin{frame}{Votante: respuesta al ruido de $S$}
-    \centering{
-    \figura{figuras_new/s_vs_eta_voter_small_dens.png}
-    }
-\end {frame}
-
-
-\begin{frame}{Votante: polarización en función de la componente gigante}
-  \centering{
-      \figura{figuras_new/va_vs_s_voter.png}
-    }
-\end{frame}
 
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%% COMPARACIONES %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-\begin{frame}{Votante vs. Vicsek: respuesta al ruido de $\va$}
-    \centering{
-      \figura{figuras_new/va_vs_eta.png}
-      }
-\end{frame}
-
-\begin{frame}{Votante vs. Vicsek: respuesta al ruido de $S$}
-  \centering{
-      \figura{figuras_new/s_vs_eta.png}
-    }
-\end{frame}
-
-\begin{frame}{Votante vs. Vicsek: polarización en función de la componente gigante}
-  \centering{
-      \figura{figuras_new/va_vs_s_comparada.png}
-}
-\end{frame}
 
 \begin{frame}{Tiempos de ejecución del CIM}
   \begin{cols}
@@ -512,19 +276,9 @@ Instituto Tecnológico de Buenos Aires (ITBA)\\
     \end{column}
   \end{cols}
 \end{frame}
+
 \begin{frame}{Conclusiones}
   \begin{itemize}\setlength{\itemsep}{14pt}
-\item \textbf{Mayor ruido decrece} observable de forma monótona y continua.
-
-\item \textbf{$v_a$}: mayor densidad \textbf{aumenta} observable en Vicsek, \textbf{disminuye} en votante. 
-
-\item \textbf{$S$}: comportamiento similar, pero convergencia a mismo valor (distintas $\rho$). 
-
-\item $v_a$ y $S$: mismo ruido, mayor $v_a$ para Vicsek.
-
-\item \textbf{Vicsek: mayor tolerancia al ruido} para $v_a$ y $S$ (menor diferencia).
-
-\item Ejecuciones CIM: 78\% parámetros por defecto, \textbf{20\% para mismas condiciones} (peor caso).
 
   \end{itemize}
 \end{frame}

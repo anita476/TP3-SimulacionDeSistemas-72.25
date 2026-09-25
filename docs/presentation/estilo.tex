@@ -50,8 +50,10 @@
 \newcommand{\uni}[1]{\,\mathrm{#1}}
 \newcommand{\va}{v_{a}}
 
-\newcommand{\siimagen}[3]{%  #1 ruta bajo data/ | #2 si está | #3 si no
-  \IfFileExists{../data/#1}{#2}{\IfFileExists{figs/#1}{#2}{#3}}%
+\newcommand{\siimagen}[3]{%
+  \IfFileExists{images/#1}{#2}{%
+    \IfFileExists{../data/#1}{#2}{%
+      \IfFileExists{figs/#1}{#2}{#3}}}%
 }
 
 \newcommand{\figura}[2][\linewidth]{%

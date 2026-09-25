@@ -15,6 +15,13 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "lib"))
 
 from plot_style import MARKERS, SERIES, apply_sci_axis, load_table, new_figure, place_legend_below, save_figure, style_axes
 
+LABELS = {
+    "pared-18": "pared de 18",
+    "pared-9": "pared de 9",
+    "disco": "disco",
+    "vacia": "mesa vacía",
+}
+
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -45,7 +52,7 @@ def main() -> None:
             markeredgewidth=0.6,
             linestyle="none",
             zorder=3,
-            label=config,
+            label=LABELS.get(config, config),
         )
     style_axes(ax, r"tiempo $t_{90}$ (s)", r"coeficiente de difusión (m$^2$/s)")
     ax.set_xlim(left=0)

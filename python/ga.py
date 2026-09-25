@@ -8,6 +8,8 @@ fijos del enunciado 1.2 / 1.4; el CLI solo mueve el genético.
 
 La población inicial no es uniforme en la mesa: incluye embudos y rieles que
 apuntan a los arcos. Mutar y cruzar siguen siendo libres (sin simetría).
+Si el mejor no mejora durante 5 generaciones, corta y sigue con el pulido
+y la confirmación.
 """
 
 from __future__ import annotations
@@ -44,6 +46,8 @@ RADIUS_SIGMA = 0.02
 CACHE_DECIMALS = 4
 ELITE = 2
 TOURNAMENT_K = 3
+# En el 1.2 las mejoras quedaron a lo sumo 4 generaciones aparte; después la meseta duró 10.
+STALL_GENERATIONS = 5
 PLACE_FAIL = "no se pudo ubicar"
 ENGINE_INVALID = (PLACE_FAIL, "overlaps", "Rk < r", "not inside table")
 MID_Y = 0.5 * W
@@ -672,7 +676,11 @@ def run_search(args: argparse.Namespace) -> None:
     print(f"población inicial: {len(population)} configs", flush=True)
 
     scored: list[tuple[Config, dict]] = []
+    best_fitness: float | None = None
+    stall = 0
+    last_gen = 0
     for gen in range(args.gens):
+        last_gen = gen
         if gen == 0:
             current = population
         else:
@@ -696,12 +704,23 @@ def run_search(args: argparse.Namespace) -> None:
             f"K={len(scored[0][0])}  <t90>={_fmt(scored[0][1]['t90_mean'])}",
             flush=True,
         )
+        if best_fitness is None or best_fit + 1e-12 < best_fitness:
+            best_fitness = best_fit
+            stall = 0
+        else:
+            stall += 1
+            if stall >= STALL_GENERATIONS:
+                print(
+                    f"sin mejora en {STALL_GENERATIONS} generaciones; corto en la gen {gen + 1}",
+                    flush=True,
+                )
+                break
 
     finalists = [config for config, _row in scored[:6]]
     polished, polish_row = polish(
         scored[0][0], exe, search_seeds, args.jobs, cache, rng, args.k_max,
     )
-    _append_history(history, args.gens, polished, polish_row)
+    _append_history(history, last_gen + 1, polished, polish_row)
     candidates = unique_configs([*finalists, polished])
     print(f"confirmando {len(candidates)} candidatas + mesa vacía...", flush=True)
     confirm_rows = evaluate_batch(candidates, exe, confirm_seeds, args.jobs, cache)
@@ -724,6 +743,7 @@ def run_search(args: argparse.Namespace) -> None:
         f"tmax {TMAX}\n"
         f"pop {args.pop}\n"
         f"gens {args.gens}\n"
+        f"gens_ran {last_gen + 1}\n"
         f"reps {args.reps}\n"
         f"jobs {args.jobs}\n"
         f"k_max {args.k_max}\n"

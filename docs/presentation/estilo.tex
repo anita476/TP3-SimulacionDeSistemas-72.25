@@ -65,6 +65,14 @@
 
 \newenvironment{cols}{\begin{columns}[c]}{\end{columns}}
 
+\newenvironment{resultado}[1][Resultado]{%
+  \begin{beamercolorbox}[wd=\linewidth,sep=6pt,rounded=true]{block body alerted}%
+  \footnotesize\textbf{#1}\par\vspace{2pt}%
+  \begin{itemize}\setlength{\itemsep}{1pt}%
+}{%
+  \end{itemize}\end{beamercolorbox}%
+}
+
 \newenvironment{parametros}[1][Parámetros]{%
   \begin{beamercolorbox}[wd=\linewidth,sep=6pt,rounded=true]{block body}%
   \footnotesize\textbf{#1}\par\vspace{2pt}%

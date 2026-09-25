@@ -84,7 +84,7 @@ data/
 !configs/*.txt
 *.gif
 *.mp4
-*.png
+data/*.png
 *.webp
 !docs/results/**/*.png
 !docs/results/**/*.txt

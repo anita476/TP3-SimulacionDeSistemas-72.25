@@ -1,0 +1,140 @@
+@startuml
+title Motor de simulación de eventos
+
+skinparam classAttributeIconSize 0
+skinparam monochrome true
+
+package "Motor" {
+
+  class Simulation {
+    - params_ : SimParams
+    - particles_ : vector<Particle>
+    - obstacles_ : vector<Obstacle>
+    - queue_ : EventQueue
+    - stats_ : SimStats
+    - t_ : double
+    - events_ : long
+    - goals_ : int
+    - goal_target_ : int
+    - t90_ : double
+
+    + Simulation(params, particles, obstacles)
+    + run(out : ostream*) : void
+    + time() : double
+    + events() : long
+    + goals() : int
+    + t90() : double
+    + particles() : vector<Particle>
+    + stats() : SimStats
+    + kinetic_energy() : double
+
+    - validate_inputs() : void
+    - push(dt, kind, i, j) : void
+    - predict_single(i) : void
+    - predict_pair(i, j) : void
+    - predict_all(i) : void
+    - valid(e : Event) : bool
+    - advance_all(t) : void
+    - resolve(e : Event) : bool
+  }
+
+  class SimParams <<struct>> {
+    + L : double
+    + W : double
+    + d : double
+    + tmax : double
+    + k : int
+  }
+
+  class SimStats <<struct>> {
+    + wall_events : long
+    + obstacle_events : long
+    + pair_events : long
+    + discarded : long
+    + zero_dt : long
+    + pair_tests : long
+    + obstacle_tests : long
+    + max_queue : size_t
+  }
+
+  class Particle <<struct>> {
+    + x : double
+    + y : double
+    + r : double
+    + vx : double
+    + vy : double
+    + m : double
+    + used : int
+    + collisions : int
+  }
+
+  class Obstacle <<struct>> {
+    + kx : double
+    + ky : double
+    + Rk : double
+  }
+
+  class Event <<struct>> {
+    + t : double
+    + kind : EventKind
+    + i : int
+    + j : int
+    + count_i : int
+    + count_j : int
+    + operator>(other) : bool
+  }
+
+  enum EventKind {
+    WallX
+    WallY
+    Pair
+    Obstacle
+  }
+
+  class EventQueue <<typedef>> {
+    priority_queue<Event>
+    ordered by t
+  }
+
+  class CollisionUtils <<utility>> {
+    + wall_time_x(p, L) : double
+    + wall_time_y(p, W) : double
+    + pair_time(a, b) : double
+    + obstacle_time(p, o) : double
+    + bounce_x(p) : void
+    + bounce_y(p) : void
+    + collide_pair(a, b) : void
+    + collide_obstacle(p, o) : void
+  }
+
+  class DumpUtils <<utility>> {
+    + write_dump_header(...)
+    + write_dump_frame(...)
+  }
+}
+
+Simulation *-- SimParams : configura
+Simulation *-- "1..*" Particle : contiene
+Simulation *-- "0..*" Obstacle : contiene
+Simulation *-- EventQueue : administra
+Simulation *-- SimStats : registra
+
+EventQueue *-- "0..*" Event : almacena
+Event --> EventKind : clasifica
+
+Simulation ..> CollisionUtils : predice/resuelve
+Simulation ..> DumpUtils : escribe trayectorias
+Event ..> Particle : identifica
+Event ..> Obstacle : identifica
+
+note right of Simulation
+  Algoritmo de eventos discretos:
+  1. Predice colisiones
+  2. Extrae el evento más próximo
+  3. Descarta eventos inválidos
+  4. Avanza todas las partículas
+  5. Resuelve la colisión
+  6. Genera nuevas predicciones
+end note
+
+@enduml

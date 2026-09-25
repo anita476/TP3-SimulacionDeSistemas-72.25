@@ -1,0 +1,82 @@
+@startuml
+
+skinparam classAttributeIconSize 0
+  class Event{
+    + t : double
+    + kind : EventKind
+    + i : int
+    + j : int
+    + count_i : int
+    + count_j : int
+    + operator>(other) : bool
+  }
+
+  enum EventKind {
+    WallX
+    WallY
+    Pair
+    Obstacle
+  }
+
+  class EventQueue {
+    priority_queue<Event>
+    ordered by t
+  }
+
+  class Simulation {
+    - params_ : SimParams
+    - particles_ : vector<Particle>
+    - obstacles_ : vector<Obstacle>
+    - queue_ : EventQueue
+    - stats_ : SimStats
+
+    + Simulation(params, particles, obstacles)
+    + run(out : ostream*) : void
+    + kinetic_energy() : double
+
+  }
+
+  class Particle {
+    + x : double
+    + y : double
+    + r : double
+    + vx : double
+    + vy : double
+    + m : double
+    + used : int
+    + collisions : int
+  }
+
+  class Obstacle {
+    + kx : double
+    + ky : double
+    + Rk : double
+  }
+
+
+
+  class CollisionUtils {
+    + wall_time_x(p, L) : double
+    + wall_time_y(p, W) : double
+    + pair_time(a, b) : double
+    + obstacle_time(p, o) : double
+    + bounce_x(p) : void
+    + bounce_y(p) : void
+    + collide_pair(a, b) : void
+    + collide_obstacle(p, o) : void
+  }
+
+
+
+Simulation *-- Particle : contiene
+Simulation *-- Obstacle : contiene
+Simulation *-- EventQueue : administra
+
+EventQueue *-- Event : almacena
+Event --> EventKind : clasifica
+
+Simulation ..> CollisionUtils : predice/resuelve
+Event ..> Particle : identifica
+Event ..> Obstacle : identifica
+
+@enduml

@@ -2,8 +2,8 @@
 \def\animbuild{0} % 1 = animaciones
 \input{estilo}
 \usepackage{caption}
-\usepackage[colorlinks=true, urlcolor=blue, linkcolor=blue]{hyperref}
 \usepackage{media9}
+\hypersetup{colorlinks=true, urlcolor=blue, linkcolor=blue}
 \usepackage{algorithm}
 \usepackage{algpseudocode}
 
@@ -147,16 +147,15 @@ Instituto Tecnológico de Buenos Aires (ITBA)\\
         \item Ídem con $S(t)$
       \end{itemize}
       \vspace{6pt}
-      {\footnotesize Barra de error: desvío entre totalidad de puntos a partir t^{*}
+      {\footnotesize Barra de error: desvío entre totalidad de puntos a partir $t^{*}$}
       \par
-      $t^{*}$ se fija en relación a la evolución temporal}
+      $t^{*}$ se fija en relación a la evolución temporal
     \end{column}
   \end{columns}
 \end{frame}
 
 
 
-% Por cada input: animacion, evolucion temporal, escalar vs input.
 \section{Resultados}
 
 \ifshowvideo
@@ -240,55 +239,170 @@ Instituto Tecnológico de Buenos Aires (ITBA)\\
 
 
 
+\begin{frame}{Parámetros fijos}
+  \centering
+  \begin{minipage}{0.55\textwidth}
+    \begin{parametros}[Fijos]
+      \item $N = 100$
+      \item $|v_0| = 1\,\mathrm{m/s}$
+      \item $r = 0.0175\,\mathrm{m}$, \ $m = 0.025\,\mathrm{kg}$
+      \item $L = 1.20\,\mathrm{m}$, \ $M = 0.68\,\mathrm{m}$
+      \item $d = 0.20\,\mathrm{m}$
+      \item $t_{\max} = 100\,\mathrm{s}$
+    \end{parametros}
+  \end{minipage}
+\end{frame}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%% COMPARACIONES %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-
-\begin{frame}{Tiempos de ejecución del CIM}
+\begin{frame}{Disco de radio $0.22\,\mathrm{m}$}
   \begin{cols}
-    \begin{column}{0.66\textwidth}
-      \figura{figuras_new/cim_comparison.png}
+    \begin{column}{0.62\textwidth}
+      \figura{disco_chico.png}
     \end{column}
-    \begin{column}{0.32\textwidth}
+    \begin{column}{0.34\textwidth}
       \begin{parametros}
-        \item TP2: $L = 10$, \ $r_{c} = 1$
-        \item TP1: $L = 20$, \ $M = 13$ \ $0.23\leq r_i \leq 0.26$
-        \item $10$ realizaciones ambos, $10000$ pasos
+        \item Centro $(0.60,\ 0.34)\,\mathrm{m}$
+        \item $R = 0.22\,\mathrm{m}$
       \end{parametros}
       \begin{resultado}
-      \item Razón TP2/TP1: $1.35-1.78$
+        \item $\langle t_{90}\rangle = 19.72 \pm 3.19\,\mathrm{s}$
       \end{resultado}
-      \\
-      \vspace{4pt}
-      {\footnotesize Observable: tiempo \emph{solo una} búsqueda vecinos.\par
-      }
     \end{column}
   \end{cols}
 \end{frame}
 
-\begin{frame}{Configuración elegida}
+\begin{frame}{$\langle t_{90}\rangle$ en función del radio}
   \begin{cols}
     \begin{column}{0.66\textwidth}
-      \figura{cim_comparison_same_dens.png}
+      \figura{disco_radio.png}
     \end{column}
     \begin{column}{0.32\textwidth}
       \begin{parametros}
-        \item TP2: $L = 10$, \ $r_{c} = 1$
-        \item TP1: $L = 10$, \ $M = 10$
-        \item Ambos partículas puntuales
- \item $10$ realizaciones ambos, $10000$ pasos 
- \end{parametros}
-       \begin{resultado}
-      \item Razón TP2/TP1: $1.03-1.20$
-      \end{resultado}
-      \\
-      \vspace{4pt}
-      {\footnotesize Observable: tiempo \emph{solo una} búsqueda vecinos.\par
-      }
+        \item Centro fijo en $(0.60,\ 0.34)\,\mathrm{m}$
+        \item $R$ de $0.06\,\mathrm{m}$ a $0.34\,\mathrm{m}$
+      \end{parametros}
     \end{column}
   \end{cols}
 \end{frame}
+
+\begin{frame}{Disco de radio $0.34\,\mathrm{m}$}
+  \begin{cols}
+    \begin{column}{0.62\textwidth}
+      \figura{disco_grande.png}
+    \end{column}
+    \begin{column}{0.34\textwidth}
+      \begin{parametros}
+        \item $R = 0.34\,\mathrm{m} = M/2$
+        \item Centro $(0.60,\ 0.34)\,\mathrm{m}$
+      \end{parametros}
+      \begin{resultado}
+        \item $\langle t_{90}\rangle = 16.96 \pm 1.99\,\mathrm{s}$
+        \item Mesa vacía: $23.76 \pm 3.22\,\mathrm{s}$
+      \end{resultado}
+    \end{column}
+  \end{cols}
+\end{frame}
+
+\begin{frame}{Pared de una columna}
+  \begin{cols}
+    \begin{column}{0.62\textwidth}
+      \figura{pared_1.png}
+    \end{column}
+    \begin{column}{0.34\textwidth}
+      \begin{parametros}
+        \item 1 columna
+        \item $R = 0.035\,\mathrm{m}$
+        \item Centro $x = 0.60\,\mathrm{m}$
+      \end{parametros}
+    \end{column}
+  \end{cols}
+\end{frame}
+
+\begin{frame}{$\langle t_{90}\rangle$ en función de las columnas, $R = 0.035\,\mathrm{m}$}
+  \begin{cols}
+    \begin{column}{0.66\textwidth}
+      \figura{pared_cols_grandes.png}
+    \end{column}
+    \begin{column}{0.32\textwidth}
+      \begin{parametros}
+        \item $R = 0.035\,\mathrm{m}$
+        \item Hueco $6.3\,\mathrm{mm} < 2r$
+        \item Centro $x = 0.60\,\mathrm{m}$
+      \end{parametros}
+    \end{column}
+  \end{cols}
+\end{frame}
+
+\begin{frame}{Pared de 9 columnas}
+  \begin{cols}
+    \begin{column}{0.62\textwidth}
+      \figura{pared_9.png}
+    \end{column}
+    \begin{column}{0.34\textwidth}
+      \begin{parametros}
+        \item 9 columnas
+        \item Ancho $0.68\,\mathrm{m}$
+        \item Centro $x = 0.60\,\mathrm{m}$
+      \end{parametros}
+      \begin{resultado}
+        \item $\langle t_{90}\rangle = 14.21 \pm 1.41\,\mathrm{s}$
+      \end{resultado}
+    \end{column}
+  \end{cols}
+\end{frame}
+
+\begin{frame}{$\langle t_{90}\rangle$ en función de las columnas, $R = r$}
+  \begin{cols}
+    \begin{column}{0.66\textwidth}
+      \figura{pared_columnas.png}
+    \end{column}
+    \begin{column}{0.32\textwidth}
+      \begin{parametros}
+        \item $R = r = 0.0175\,\mathrm{m}$
+        \item Hueco $0.8\,\mathrm{mm}$
+        \item Centro $x = 0.60\,\mathrm{m}$
+      \end{parametros}
+    \end{column}
+  \end{cols}
+\end{frame}
+
+\begin{frame}{Configuración de menor $\langle t_{90}\rangle$}
+  \begin{cols}
+    \begin{column}{0.62\textwidth}
+      \figura{pared_18.png}
+    \end{column}
+    \begin{column}{0.34\textwidth}
+      \begin{parametros}
+        \item 18 columnas
+        \item Ancho $0.644\,\mathrm{m}$
+        \item $R = 0.0175\,\mathrm{m}$
+        \item Centro $x = 0.60\,\mathrm{m}$
+      \end{parametros}
+      \begin{resultado}
+        \item $\langle t_{90}\rangle = 13.67 \pm 1.31\,\mathrm{s}$
+      \end{resultado}
+    \end{column}
+  \end{cols}
+\end{frame}
+
+\begin{frame}{Evolución temporal}
+  \centering
+  \animacion{pared}{0}{0}{10}{pared_18_anim.png}{}
+\end{frame}
+
+\begin{frame}{Evolución de la fracción de partículas usadas}
+  \begin{cols}
+    \begin{column}{0.66\textwidth}
+      \figura{fu_ganador.png}
+    \end{column}
+    \begin{column}{0.32\textwidth}
+      \begin{parametros}
+        \item Pared de 18 columnas
+      \end{parametros}
+    \end{column}
+  \end{cols}
+\end{frame}
+
+
 
 \begin{frame}{Conclusiones}
   \begin{itemize}\setlength{\itemsep}{14pt}

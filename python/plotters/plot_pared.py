@@ -8,7 +8,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "lib"))
 
-from plot_style import MARKERS, SERIES, VERMILLION, new_figure, place_legend_below, save_figure, style_axes
+from plot_style import MARKERS, SERIES, VERMILLION, new_figure, save_figure, style_axes
 from tables import load_table
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -43,7 +43,17 @@ def main() -> None:
     ax.axhline(15.6094, color="0.25", linestyle=":", label="elegida")
     style_axes(ax, r"centro de la pared $x$ (m)", r"tiempo $t_{90}$ (s)")
     ax.set_ylim(0, 42)
-    place_legend_below(ax, ncol=3)
+    handles, labels = ax.get_legend_handles_labels()
+    # El rótulo del eje es largo: la leyenda externa queda pegada si no se baja.
+    ax.legend(
+        handles,
+        labels,
+        loc="upper center",
+        bbox_to_anchor=(0.5, -0.22),
+        ncol=3,
+        frameon=True,
+        borderaxespad=0.0,
+    )
     save_figure(fig, OUTPUT)
 
 

@@ -68,8 +68,8 @@ def main() -> None:
     for x, y, radius in discs:
         ax.add_patch(Circle((x, y), radius, fc=OBSTACLE, ec="black", lw=0.8, zorder=2))
     ax.plot([], [], linestyle="none", marker="o", color=OBSTACLE, markeredgecolor="black", label="obstáculo")
-    # Debajo del rótulo del eje x. Adentro tapa el borde de la mesa.
-    ax.legend(loc="upper center", bbox_to_anchor=(0.5, -0.32), ncol=2, frameon=True, fancybox=False)
+    # Justo debajo del rótulo. Más abajo deja un hueco grande; adentro tapa el borde.
+    ax.legend(loc="upper center", bbox_to_anchor=(0.5, -0.16), ncol=2, frameon=True, fancybox=False)
     save_figure(fig, args.output)
 
 

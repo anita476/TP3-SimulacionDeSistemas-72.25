@@ -11,7 +11,7 @@ struct GeneratorConfig {
     double L = 1.20, W = 0.68;
     double r = 0.0175, m = 0.025, v0=1.0;
     std::vector<Obstacle> obstacles;
-    std::uint64_t seed = 1;
+    std::uint64_t seed = 0;
     int max_attempts = 100000;
 };
 

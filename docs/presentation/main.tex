@@ -24,8 +24,6 @@ Instituto Tecnológico de Buenos Aires (ITBA)\\
 
 \begin{frame}[plain,noframenumbering]
   \titlepage
-
-
 \end{frame}
 
 \section{Introducción}
@@ -114,7 +112,7 @@ Instituto Tecnológico de Buenos Aires (ITBA)\\
       \vspace{4pt}
       \begin{parametros}[Parámetros variables]
        \item $N$, cantidad partículas 
-       \item $n, R_k, x_k, y_k$ de obstáculos
+       \item Obstáculos
         
       \end{parametros}
     \end{column}
@@ -162,7 +160,7 @@ Instituto Tecnológico de Buenos Aires (ITBA)\\
 \section{Resultados}
 
 \ifshowvideo
-    \begin{frame}{Vicsek: respuesta al ruido}
+    \begin{frame}{Tiempo de ejecución en función de N}
       \begin{columns}[T]
         \begin{column}{0.50\textwidth}
           \centering{\small $\eta = 1\ten{-1},\ \rho = 4$}\par
@@ -195,7 +193,7 @@ Instituto Tecnológico de Buenos Aires (ITBA)\\
       \end{columns}
     \end{frame}
 \else 
-    \begin{frame}{Vicsek: respuesta al ruido}
+    \begin{frame}{Tiempo de ejecución en función de N}
       \begin{columns}[T]
         \begin{column}{0.50\textwidth}
           \centering{\small $\eta = 1\ten{-1},\ \rho = 4$}\par
@@ -218,20 +216,27 @@ Instituto Tecnológico de Buenos Aires (ITBA)\\
     
 \fi
 
-
-\begin{frame}{Evolución temporal de $\va$}
+\begin{frame}{Tiempo de ejecución en función de N}
   \begin{cols}
-    \begin{column}{0.70\textwidth}
-      \figura{figuras_new/va_vs_t_vicsek_rho8.png}
+    \begin{column}{0.66\textwidth}
+      \figura{figuras_new/cim_comparison.png}
     \end{column}
-    \begin{column}{0.30\textwidth}
+    \begin{column}{0.32\textwidth}
       \begin{parametros}
-        \item $\rho = 8$
+        \item TP2: $L = 10$, \ $r_{c} = 1$
+        \item TP1: $L = 20$, \ $M = 13$ \ $0.23\leq r_i \leq 0.26$
+        \item $10$ realizaciones ambos, $10000$ pasos
       \end{parametros}
+      \begin{resultado}
+      \item Razón TP2/TP1: $1.35-1.78$
+      \end{resultado}
+      \\
+      \vspace{4pt}
+      {\footnotesize Observable: tiempo \emph{solo una} búsqueda vecinos.\par
+      }
     \end{column}
   \end{cols}
 \end{frame}
-
 
 
 
@@ -262,10 +267,10 @@ Instituto Tecnológico de Buenos Aires (ITBA)\\
   \end{cols}
 \end{frame}
 
-\begin{frame}{Tiempos de ejecución del CIM}
+\begin{frame}{Configuración elegida}
   \begin{cols}
     \begin{column}{0.66\textwidth}
-      \figura{figuras_new/cim_comparison_same_dens.png}
+      \figura{cim_comparison_same_dens.png}
     \end{column}
     \begin{column}{0.32\textwidth}
       \begin{parametros}

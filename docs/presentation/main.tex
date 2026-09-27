@@ -220,27 +220,30 @@ Instituto Tecnológico de Buenos Aires (ITBA)\\
         \item Mesa sin obstáculos
         \item $t_{f} = 30\,\mathrm{s}$
         \item $10$ realizaciones
-        \item $N$ de $25$ a $300$
+        \item $N$ de $25$ a $650$, cada $25$
+        \item $N \leq 425$: al azar
+        \item $N \geq 450$: red hexagonal
       \end{parametros}
       \begin{resultado}
-        \item De $0.00114\,\mathrm{s}$ a $1.99\,\mathrm{s}$
+        \item De $0.00108\,\mathrm{s}$ a $134\,\mathrm{s}$
       \end{resultado}
     \end{column}
   \end{cols}
 \end{frame}
 
 
-\begin{frame}{Ajuste logarítmico y mínimos cuadrados}
+\begin{frame}{Ajuste de ley de potencia}
   \begin{cols}
     \begin{column}{0.62\textwidth}
       \figura{runtime_loglog.png}
     \end{column}
     \begin{column}{0.34\textwidth}
       \begin{parametros}
-        \item $t = c N^{a}$
+        \item $t = cN^{a}$
+        \item Ajuste para $N \leq 300$
       \end{parametros}
       \begin{resultado}
-        \item $a \approx 2.95$
+        \item $a = 2.99 \pm 0.06$
       \end{resultado}
     \end{column}
   \end{cols}
@@ -496,7 +499,7 @@ Instituto Tecnológico de Buenos Aires (ITBA)\\
 
 \begin{frame}{Conclusiones}
   \begin{itemize}\setlength{\itemsep}{14pt}
-    \item El tiempo \textbf{crece como} $N^{3}$.
+    \item Hasta $N \approx 300$ el tiempo \textbf{crece como} $N^{3}$.
     \item Separar la mesa \textbf{en dos} \textbf{baja} $\langle t_{90}\rangle$.
     \item \textbf{Poco o demasiado} espacio a cada lado \textbf{lo alarga}.
     \item En general, a \textbf{menor} $D$, \textbf{menor} ${\langle t_{90}\rangle}$.
@@ -510,8 +513,7 @@ Instituto Tecnológico de Buenos Aires (ITBA)\\
 \appendix
 \section*{Apéndice}
 
-\begin{frame}{Apéndice:}
-  \item  Hola
+\begin{frame}{Apéndice: por qué el ajuste usa $N \leq 300$}
 \end{frame}
 
 \end{document}

@@ -6,6 +6,8 @@
 Lo que no esté, se omite. Los dumps mandan sobre tablas viejas.
 
     data/wall.txt                      1.1  columnas: N events wall_events pair_events time (o menos)
+    --compare-data data/wall_hex       1.1  suma esos N (red hexagonal) a la serie -> runtime_all.txt
+    --fit-max-n 300                    1.1  ajustes con N <= 300; más allá la recta va punteada
     data/runs/t90/<x>/*.txt            1.2
     data/runs/empty/*.txt              mesa vacía (1.2)
     data/runs/msd/*.txt                1.3 DCM, una realización
@@ -72,24 +74,49 @@ def runtime_table(wall: Path) -> list[tuple[int, float, float, dict[str, float]]
     return out
 
 
-def _step_runtime(data: Path) -> None:
+_RUNTIME_HEADER = "N t_mean t_std events_mean wall_mean pair_mean"
+
+
+def _runtime_lines(rows: list[tuple[int, float, float, dict[str, float]]]) -> list[str]:
+    cols = ("events", "wall_events", "pair_events")
+    return [f"{n} {m:.6g} {s:.6g} " + " ".join(f"{ev[c]:.6g}" if c in ev else "None" for c in cols)
+            for n, m, s, ev in rows]
+
+
+def _write_runtime(data: Path) -> Path:
+    """data/wall.txt -> data/runtime.txt (si hay wall.txt); devuelve la ruta de la tabla."""
     wall = data / "wall.txt"
     table = data / "runtime.txt"
     if wall.is_file():
-        rows = runtime_table(wall)
-        cols = ("events", "wall_events", "pair_events")
-        _write_table(
-            table,
-            "N t_mean t_std events_mean wall_mean pair_mean",
-            [f"{n} {m:.6g} {s:.6g} " + " ".join(f"{ev[c]:.6g}" if c in ev else "None" for c in cols)
-             for n, m, s, ev in rows],
-        )
+        _write_table(table, _RUNTIME_HEADER, _runtime_lines(runtime_table(wall)))
+    return table
+
+
+def _step_runtime(data: Path, compare: Path | None = None, fit_max_n: float = 300) -> None:
+    """1.1. Con compare (p. ej. data/wall_hex), sus N se suman a los de data como una
+    sola serie (data/runtime_all.txt) y se dibujan con marcador vacío."""
+    table = _write_runtime(data)
     if not table.is_file():
-        print(f"se omite 1.1: no hay {wall} ni {table}")
+        print(f"se omite 1.1: no hay {data / 'wall.txt'} ni {table}")
         return
+    extra: list[str] = []
+    if compare is not None:
+        if not (compare / "wall.txt").is_file():
+            raise ValueError(f"--compare-data: no hay {compare / 'wall.txt'}")
+        _write_runtime(compare)
+        main_rows = runtime_table(data / "wall.txt") if (data / "wall.txt").is_file() else []
+        compare_rows = runtime_table(compare / "wall.txt")
+        repeated = sorted({r[0] for r in main_rows} & {r[0] for r in compare_rows})
+        if repeated:
+            raise ValueError(f"N repetidos en {data} y {compare}: {repeated}; cada N tiene que salir de una sola carpeta")
+        table = data / "runtime_all.txt"
+        _write_table(table, _RUNTIME_HEADER, _runtime_lines(sorted(main_rows + compare_rows, key=lambda r: r[0])))
+        extra = ["--hollow-n", *(str(r[0]) for r in compare_rows), "--label", "al azar", "--hollow-label", "red hexagonal"]
     _run(
         HERE / "plotters" / "plot_runtime.py",
+        *extra,
         "--input", str(table),
+        "--fit-max-n", f"{fit_max_n:g}",
         "--output", str(data / "runtime.png"),
         "--loglog-output", str(data / "runtime_loglog.png"),
         "--error-output", str(data / "runtime_error.png"),
@@ -216,11 +243,15 @@ def main() -> None:
     parser.add_argument("--xlabel", default=r"posición $x$ (m)", help="eje x de 1.2")
     parser.add_argument("--t-min", type=float, default=None)
     parser.add_argument("--t-max", type=float, default=None)
+    parser.add_argument("--compare-data", type=Path, default=None,
+                        help="carpeta con otro wall.txt (p. ej. data/wall_hex): sus N se suman a la serie de 1.1")
+    parser.add_argument("--fit-max-n", type=float, default=300,
+                        help="1.1: las leyes de potencia se ajustan con N <= este valor (default 300)")
     args = parser.parse_args()
     data = args.data
     data.mkdir(parents=True, exist_ok=True)
     try:
-        _step_runtime(data)
+        _step_runtime(data, args.compare_data, args.fit_max_n)
         _step_t90(data, args.xlabel)
         _step_msd(data, args.t_min, args.t_max)
         _step_d_vs_t90(data, args.t_min, args.t_max)

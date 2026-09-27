@@ -1,11 +1,11 @@
 r"""Anima un dump del motor de billar-metegol.
 
 El simulador escribe un archivo de texto; este script solo lo lee. Cada
-cuadro es un evento (cada k eventos o un gol). La velocidad de
-reproducción (--fps) es una elección de visualización, no un dt de la
-simulación: entre cuadros pasan k eventos, no un tiempo fijo.
---realtime hace que el archivo dure lo mismo que la mesa: un segundo de
-video es un segundo simulado, y --fps es la cantidad de cuadros de ese segundo.
+cuadro del video es un cuadro del dump: la condición inicial, un gol, o
+una colisión física guardada cada k eventos. Esos tiempos son los del
+archivo. No se inventan instantes intermedios ni se interpolan posiciones.
+La velocidad de reproducción (--fps) solo decide cuántos cuadros del dump
+se muestran por segundo de video.
 
     python python/animate.py --traj data/sample_traj.txt --show
     python python/animate.py --traj run.txt --out run.gif --png run.png
@@ -60,28 +60,6 @@ GIF_DPI = 100
 MP4_DPI = 120  # 10 in x 120 dpi = 1200 px de ancho; ffmpeg necesita dimensiones pares
 ARROW_SCALE = 0.06  # metros de flecha por m/s
 RING_FACTOR = 2.2  # radio del anillo de gol, en radios de partícula
-
-
-def realtime_frame_indices(frames: list[Frame], fps: int) -> list[int]:
-    """Un índice de cuadro por tick de 1/fps, en tiempo de la mesa.
-
-    El video dura t_final - t_inicial. Si varios cuadros caen en el mismo
-    tick, queda el último; si un tick no trae cuadro nuevo, se repite el anterior.
-    """
-    t0 = frames[0].t
-    duration = frames[-1].t - t0
-    if duration <= 0:
-        return [0]
-    n_out = max(1, int(round(duration * fps)))
-    indices: list[int] = []
-    j = 0
-    last = len(frames) - 1
-    for i in range(n_out):
-        t = t0 + i / fps
-        while j < last and frames[j + 1].t <= t:
-            j += 1
-        indices.append(j)
-    return indices
 
 
 def _stats_line(frame: Frame, n: int) -> str:
@@ -220,9 +198,7 @@ def main() -> None:
     parser.add_argument("--png", help="PNG de un cuadro")
     parser.add_argument("--frame", type=int, default=None, help="cuadro del PNG (default: el del medio; 0 = inicial)")
     parser.add_argument("--show", action="store_true", help="abrir ventana")
-    parser.add_argument("--fps", type=int, default=8, help="cuadros por segundo de reproducción")
-    parser.add_argument("--realtime", action="store_true",
-                        help="el video dura lo mismo que la mesa: 1 s de archivo = 1 s simulado")
+    parser.add_argument("--fps", type=int, default=8, help="cuadros del dump por segundo de video")
     parser.add_argument("--inset", action="store_true", help="inset con Fu(t)")
     parser.add_argument("--arrows", action="store_true", help="flechas de velocidad")
     args = parser.parse_args()
@@ -242,10 +218,9 @@ def main() -> None:
         sys.exit(str(error))
     fig, draw = make_figure(traj, arrows=args.arrows, inset=args.inset)
     n_frames = len(traj.frames)
-    order = realtime_frame_indices(traj.frames, args.fps) if args.realtime else list(range(n_frames))
 
     def play(index: int) -> None:
-        draw(order[index])
+        draw(index)
 
     if args.png:
         index = n_frames // 2 if args.frame is None else args.frame
@@ -260,21 +235,21 @@ def main() -> None:
     if args.out:
         gif_path = Path(args.out)
         gif_path.parent.mkdir(parents=True, exist_ok=True)
-        anim = FuncAnimation(fig, play, frames=len(order), blit=False, interval=1000 / args.fps)
+        anim = FuncAnimation(fig, play, frames=n_frames, blit=False, interval=1000 / args.fps)
         anim.save(gif_path, writer=PillowWriter(fps=args.fps), dpi=GIF_DPI, savefig_kwargs={"facecolor": "white"})
-        print(f"se escribió {gif_path} ({len(order)} cuadros a {args.fps} fps)")
+        print(f"se escribió {gif_path} ({n_frames} cuadros a {args.fps} fps)")
 
     if args.mp4:
         mp4_path = Path(args.mp4)
         mp4_path.parent.mkdir(parents=True, exist_ok=True)
-        anim = FuncAnimation(fig, play, frames=len(order), blit=False, interval=1000 / args.fps)
+        anim = FuncAnimation(fig, play, frames=n_frames, blit=False, interval=1000 / args.fps)
         anim.save(mp4_path, writer=FFMpegWriter(fps=args.fps, bitrate=3000), dpi=MP4_DPI,
                   savefig_kwargs={"facecolor": "white"})
         table_s = traj.frames[-1].t - traj.frames[0].t
-        print(f"se escribió {mp4_path} ({len(order)} cuadros a {args.fps} fps, {len(order) / args.fps:.2f} s de video, {table_s:.2f} s de mesa)")
+        print(f"se escribió {mp4_path} ({n_frames} cuadros a {args.fps} fps, {n_frames / args.fps:.2f} s de video, {table_s:.2f} s de mesa)")
 
     if args.show:
-        FuncAnimation(fig, play, frames=len(order), blit=False, interval=1000 / args.fps, repeat=True)
+        FuncAnimation(fig, play, frames=n_frames, blit=False, interval=1000 / args.fps, repeat=True)
         plt.show()
     else:
         plt.close(fig)

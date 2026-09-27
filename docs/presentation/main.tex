@@ -305,10 +305,8 @@ Instituto Tecnológico de Buenos Aires (ITBA)\\
     \begin{frame}{Evolución temporal}
           \begin{figure}
               \centering
-              \includegraphics[width=1\linewidth]{disco_r034.png}
-                \caption*{\url{
-            MISSING
-                }}        
+          \includegraphics[width=\linewidth,height=0.78\textheight,keepaspectratio]{disco_r034.png}
+                \caption*{\url{MISSING}}        
             \end{figure}
     \end{frame}
     
@@ -402,7 +400,8 @@ Instituto Tecnológico de Buenos Aires (ITBA)\\
   \end{cols}
 \end{frame}
 
-\begin{frame}{Evolución temporal}
+\ifshowvideo
+  \begin{frame}{Evolución temporal}
   \centering
   \includemedia[
     width=\linewidth,
@@ -417,6 +416,16 @@ Instituto Tecnológico de Buenos Aires (ITBA)\\
     }
   ]{\includegraphics[width=\linewidth,height=0.88\textheight,keepaspectratio]{pared_18_anim.png}}{VPlayer.swf}
 \end{frame}
+\else 
+    \begin{frame}{Evolución temporal}
+          \begin{figure}
+              \centering
+          \includegraphics[width=\linewidth,height=0.78\textheight,keepaspectratio]{pared_18_anim.png}
+                \caption*{\url{MISSING}}        
+            \end{figure}
+    \end{frame}
+    
+\fi
 
 \begin{frame}{Evolución de la fracción de partículas usadas}
   \centering
@@ -496,7 +505,7 @@ Instituto Tecnológico de Buenos Aires (ITBA)\\
 \section*{Apéndice}
 
 \begin{frame}{Apéndice:}
-  \item 
+  \item  Hola
 \end{frame}
 
 \end{document}

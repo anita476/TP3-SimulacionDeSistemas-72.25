@@ -62,6 +62,8 @@ implementadas en `validate_obstacles()` - R_k >= r y dentro de la mesa.
 
 Para simular una mesa sin obstáculos, omitir `-obstacles`.
 
+Sin `--raw`, cada gol imprime `Particles converted: <Ng>` en ese momento. Al terminar, el resumen incluye `t90`. `--raw` no imprime los goles: solo el resumen `clave valor`.
+
 ### Múltiples realizaciones
 
 `run.py` ejecuta el motor con una semilla distinta por realización.

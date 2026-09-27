@@ -29,7 +29,7 @@ class Simulation {
     public:
         Simulation(SimParams params, std::vector<Particle> particles, std::vector<Obstacle> obstacles);
 
-        void run(std::ostream *out);
+        void run(std::ostream *out, std::ostream *progress = nullptr);
         double time() const {return t_;}
         long events() const {return events_;}
         int goals() const {return goals_;}

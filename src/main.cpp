@@ -235,7 +235,7 @@ int main(int argc, char *argv[]) {
     const double init_seconds = seconds_since(t_init);
     const double e0 = sim.kinetic_energy();
     const auto t_loop = std::chrono::steady_clock::now();
-    sim.run(out);
+    sim.run(out, program.get<bool>("--raw") ? nullptr : &std::cout);
     const double loop_seconds = seconds_since(t_loop);
     const double e_end = sim.kinetic_energy();
     const SimStats &st = sim.stats();

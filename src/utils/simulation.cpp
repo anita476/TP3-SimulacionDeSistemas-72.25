@@ -163,7 +163,7 @@ double Simulation::kinetic_energy() const {
     return e;
 }
 
-void Simulation::run(std::ostream *out) {
+void Simulation::run(std::ostream *out, std::ostream *progress) {
     if (out) {
         write_dump_header(*out, params_.L, params_.W, params_.d,  particles_[0].r, particles_[0].m, static_cast<int>(particles_.size()), obstacles_);
         write_dump_frame(*out, t_, particles_);
@@ -181,6 +181,10 @@ void Simulation::run(std::ostream *out) {
         advance_all(e.t);
         const bool goal = resolve(e);
         ++events_;
+        if (goal && progress) {
+            *progress << "Particles converted: " << goals_ << '\n';
+            progress->flush();
+        }
 
         if (out && (goal || (params_.k > 0 && events_ % params_.k == 0)))
             write_dump_frame(*out, t_, particles_);

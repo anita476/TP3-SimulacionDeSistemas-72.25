@@ -10,7 +10,7 @@
 
 
 \newif\ifshowvideo 
-\showvideotrue
+\showvideofalse
 %% cambiar para mostrar las animaciones embebdidas o los stills$$
 
 \title[TP3]{Trabajo Práctico Nro. 3: Simulación Dirigida por Eventos}
@@ -145,8 +145,8 @@ Instituto Tecnológico de Buenos Aires (ITBA)\\
               \[ \langle t_{90}\rangle = \frac{1}{n}\sum_{k=1}^{n} t_{90,k} \]
         \item $\langle\Delta r^{2}\rangle = 4Dt$
         \item Barra de error (desvío estándar muestral):
-              \[ \sigma = \sqrt{\frac{1}{n-1}\sum_{k=1}^{n}
-                 \left(t_{90,k}-\langle t_{90}\rangle\right)^{2}} \]
+              $ \sigma = \sqrt{\frac{\sum_{k=1}^{n}
+                 \left(t_{90,k}-\langle t_{90}\rangle\right)^{2}}{n-1} }$
       \end{itemize}
       \vspace{6pt}
     \end{column}
@@ -234,6 +234,7 @@ Instituto Tecnológico de Buenos Aires (ITBA)\\
     \end{column}
   \end{cols}
 \end{frame}
+
 
 \begin{frame}{Ajuste}
   \begin{cols}

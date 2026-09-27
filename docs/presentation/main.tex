@@ -8,6 +8,11 @@
 \usepackage{algpseudocode}
 \usepackage{appendixnumberbeamer}
 
+
+\newif\ifshowvideo 
+\showvideotrue
+%% cambiar para mostrar las animaciones embebdidas o los stills$$
+
 \title[TP3]{Trabajo Práctico Nro. 3: Simulación Dirigida por Eventos}
 \subtitle{Colisiones entre partículas}
 \author[Grupo 03]{Matías Leporini \and Camila Lee \and Ana Negre}
@@ -139,9 +144,11 @@ Instituto Tecnológico de Buenos Aires (ITBA)\\
         \item Promedio entre las realizaciones:
               \[ \langle t_{90}\rangle = \frac{1}{n}\sum_{k=1}^{n} t_{90,k} \]
         \item $\langle\Delta r^{2}\rangle = 4Dt$
+        \item Barra de error (desvío estándar muestral):
+              \[ \sigma = \sqrt{\frac{1}{n-1}\sum_{k=1}^{n}
+                 \left(t_{90,k}-\langle t_{90}\rangle\right)^{2}} \]
       \end{itemize}
       \vspace{6pt}
-      {\footnotesize Barra de error: desvío estándar muestral.}
     \end{column}
   \end{columns}
 \end{frame}
@@ -149,6 +156,65 @@ Instituto Tecnológico de Buenos Aires (ITBA)\\
 
 
 \section{Resultados}
+
+\ifshowvideo
+    \begin{frame}{Tiempo de ejecución en función de $N$}
+      \begin{columns}[T]
+        \begin{column}{0.50\textwidth}
+          \centering{\small $N=25$}\par
+          \includemedia[
+            width=0.8\linewidth,
+            height=0.6\linewidth,
+            activate=onclick,% maybe change to the slow one ! %
+            addresource=animaciones/run_n25.mp4,
+            flashvars={
+                    source=animaciones/run_n25.mp4
+                    &autoPlay=false
+                    &loop=true
+            }
+            ]{\includegraphics[width=0.8\linewidth]{images/run_n25.png}}{VPlayer.swf}
+        \end{column}\href{}{}
+        \begin{column}{0.50\textwidth}
+          \centering{\small $N=300$}\par
+          \includemedia[
+            width=0.8\linewidth,
+            height=0.6\linewidth,
+            activate=onclick,
+            addresource=animaciones/run_n300.mp4,
+            flashvars={
+                    source=animaciones/run_n300.mp4
+                    &autoPlay=false
+                    &loop=true
+            }
+            ]{\includegraphics[width=0.8\linewidth]{images/run_n300.png}}{VPlayer.swf}
+        \end{column}
+      \end{columns}
+    \end{frame}
+\else 
+    \begin{frame}{Tiempo de ejecución en función de $N$}
+      \begin{columns}[T]
+        \begin{column}{0.50\textwidth}
+          \centering{\small $N=25$}\par
+          \begin{figure}
+              \centering
+              \includegraphics[width=1\linewidth]{images//run_n25.png}
+                \caption*{\url{
+            MISSING
+                }}        
+            \end{figure}
+        \end{column}\href{}{}
+        \begin{column}{0.50\textwidth}
+          \centering{\small $N=300$}\par
+          \begin{figure}
+              \centering
+              \includegraphics[width=1\linewidth]{images//run_n300.png}
+                \caption*{\url{MISSING}}        
+            \end{figure}
+        \end{column}
+      \end{columns}
+    \end{frame}
+    
+\fi
 
 \begin{frame}{Tiempo de ejecución en función de $N$}
   \begin{cols}

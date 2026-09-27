@@ -19,7 +19,7 @@ from matplotlib.patches import Circle, FancyArrowPatch, Rectangle
 from plot_style import BLUE, GREEN, VERMILLION, apply_academic_style, save_figure
 
 L = 1.20
-M = 0.68
+W = 0.68
 GOAL_WIDTH = 0.20
 PARTICLE_RADIUS = 0.028
 OBSTACLE_COLOR = "#4d4d4d"
@@ -45,14 +45,14 @@ def dimension_arrow(ax, start, end, label, text_offset):
 def draw_system(ax):
     """Dibuja una configuración genérica, sin valores de una realización."""
     ax.set_xlim(-0.16, L + 0.16)
-    ax.set_ylim(-0.20, M + 0.16)
+    ax.set_ylim(-0.20, W + 0.16)
     ax.set_aspect("equal")
     ax.axis("off")
 
-    ax.add_patch(Rectangle((0, 0), L, M, facecolor="#f7f7f5", edgecolor="black", lw=2.0, zorder=1))
+    ax.add_patch(Rectangle((0, 0), L, W, facecolor="#f7f7f5", edgecolor="black", lw=2.0, zorder=1))
 
-    goal_y0 = 0.5 * M - 0.5 * GOAL_WIDTH
-    goal_y1 = 0.5 * M + 0.5 * GOAL_WIDTH
+    goal_y0 = 0.5 * W - 0.5 * GOAL_WIDTH
+    goal_y1 = 0.5 * W + 0.5 * GOAL_WIDTH
     for x in (0, L):
         ax.plot([x, x], [goal_y0, goal_y1], color=GREEN, lw=8, solid_capstyle="butt", zorder=4)
 
@@ -71,7 +71,7 @@ def draw_system(ax):
         ax.add_patch(Circle((x, y), PARTICLE_RADIUS, facecolor=color, edgecolor="black", lw=0.8, zorder=5))
 
     dimension_arrow(ax, (0, -0.09), (L, -0.09), r"$L$", (0, -0.035))
-    dimension_arrow(ax, (-0.09, 0), (-0.09, M), r"$M$", (-0.035, 0))
+    dimension_arrow(ax, (-0.09, 0), (-0.09, W), r"$W$", (-0.035, 0))
     dimension_arrow(ax, (L + 0.055, goal_y0), (L + 0.055, goal_y1), r"$d$", (0.035, 0))
 
 

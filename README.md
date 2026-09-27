@@ -116,6 +116,8 @@ data/runs/empty/
 ## Animación de las trayectorias
 Por defecto, `run.py` llama a `animate.py` después de terminar todas las realizaciones y genera un GIF y un PNG de la primera.
 
+`animate.py` solo lee el dump del motor. Cada cuadro del GIF o del MP4 es un cuadro de ese archivo: condición inicial, gol, o colisión física guardada cada k eventos. No se interpolan posiciones ni se usan tiempos que no estén en el dump. `--fps` es la velocidad de reproducción.
+
 ```bash
 # Vista previa de cada realización.
 python3 python/run.py \

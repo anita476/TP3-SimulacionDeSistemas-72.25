@@ -34,7 +34,7 @@ python3 python/animate.py \
 
 ## 1.2 Animaciones configuración final
 
-Semilla 601, la primera del barrido del 1.2. tmax = 20 s cubre el t90 de las dos (12.01 s la pared, 16.27 s el disco). k = 100, igual que las de N. `--realtime --fps 30` deja el mp4 en 20 s: un segundo de video es un segundo de mesa.
+Semilla 601, la primera del barrido del 1.2. tmax = 20 s cubre el t90 de las dos (12.01 s la pared, 16.27 s el disco). k = 100, igual que las de N. Cada cuadro del mp4 es un cuadro del dump (condición inicial, gol o cada 100 colisiones). `--fps 30` es solo la velocidad de reproducción.
 
 ```bash
 printf '0.60 0.34 0.34\n' > data/runs/1.2/anim/disco_r034.txt
@@ -48,7 +48,7 @@ printf '0.60 0.34 0.34\n' > data/runs/1.2/anim/disco_r034.txt
 python3 python/animate.py \
     --traj data/runs/1.2/anim/disco_r034_traj.txt \
     --mp4 docs/presentation/animations/disco_r034.mp4 \
-    --realtime --fps 30
+    --fps 30
 ```
 
 La pared de 18 columnas sale de `pared.wall(18, 0.60, 0.0175)`: ancho 0.644 m, R = r.
@@ -65,7 +65,7 @@ python3 -c "import sys; sys.path.insert(0, 'python'); from pathlib import Path; 
 python3 python/animate.py \
     --traj data/runs/1.2/anim/pared_18_traj.txt \
     --mp4 docs/presentation/animations/pared_18.mp4 \
-    --realtime --fps 30
+    --fps 30
 ```
 
 ## 1.3 Animaciones de difusión ?

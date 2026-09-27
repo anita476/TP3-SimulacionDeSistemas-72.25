@@ -71,11 +71,11 @@ def main() -> None:
             n0 = loaded[0][0]
             if any(n != n0 for n, _series in loaded):
                 parser.error(f"{folder}: las realizaciones no tienen el mismo N")
-            times = sorted({0.0, *(t for _n, series in loaded for t, _ng in series)})
+            times = sorted({t for _n, series in loaded for t, _ng in series})
             if args.t_max is not None:
                 times = [t for t in times if t <= args.t_max]
-                if not times or times[-1] < args.t_max:
-                    times.append(args.t_max)
+            if not times:
+                raise ValueError(f"{folder}: no hay eventos en la ventana")
             columns = [_fu_at(series, times, n0) for _n, series in loaded]
             means, stds = [], []
             for column in zip(*columns):

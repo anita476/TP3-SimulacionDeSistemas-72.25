@@ -2,7 +2,65 @@
 \def\animbuild{0} % 1 = animaciones
 \input{estilo}
 \usepackage{caption}
-\usepackage{media9}
+% Video embebido para Acrobat sin Flash (RichMedia Subtype/Video).
+% \embedvideo{póster}{mp4} arranca al clic; \embedvideo* arranca al abrir la diapositiva.
+\usepackage[bigfiles]{pdfbase}
+\ExplSyntaxOn
+\NewDocumentCommand\embedvideo{smm}{
+  \group_begin:
+  \leavevmode
+  \tl_if_exist:cTF{file_\file_mdfive_hash:n{#3}}{
+    \tl_set_eq:Nc\video{file_\file_mdfive_hash:n{#3}}
+  }{
+    \IfFileExists{#3}{}{\GenericError{}{File~`#3'~not~found}{}{}}
+    \pbs_pdfobj:nnn{}{fstream}{{}{#3}}
+    \pbs_pdfobj:nnn{}{dict}{
+      /Type/Filespec/F~(#3)/UF~(#3)
+      /EF~<</F~\pbs_pdflastobj:>>
+    }
+    \tl_set:Nx\video{\pbs_pdflastobj:}
+    \tl_gset_eq:cN{file_\file_mdfive_hash:n{#3}}\video
+  }
+  \pbs_pdfobj:nnn{}{dict}{
+    /Type/RichMediaInstance/Subtype/Video
+    /Asset~\video
+    /Params~< >
+  }
+  \pbs_pdfobj:nnn{}{dict}{
+    /Type/RichMediaConfiguration/Subtype/Video
+    /Instances~[\pbs_pdflastobj:]
+  }
+  \pbs_pdfobj:nnn{}{dict}{
+    /Type/RichMediaContent
+    /Assets~<</Names~[(#3)~\video]>>
+    /Configurations~[\pbs_pdflastobj:]
+  }
+  \tl_set:Nx\rmcontent{\pbs_pdflastobj:}
+  \pbs_pdfobj:nnn{}{dict}{
+    /Activation~<<
+      /Condition/\IfBooleanTF{#1}{PV}{XA}
+      /Presentation~<</Style/Embedded>>
+    >>
+    /Deactivation~<</Condition/PI>>
+  }
+  \hbox_set:Nn\l_tmpa_box{#2}
+  \tl_set:Nx\l_box_wd_tl{\dim_use:N\box_wd:N\l_tmpa_box}
+  \tl_set:Nx\l_box_ht_tl{\dim_use:N\box_ht:N\l_tmpa_box}
+  \tl_set:Nx\l_box_dp_tl{\dim_use:N\box_dp:N\l_tmpa_box}
+  \pbs_pdfxform:nnnnn{1}{1}{}{}{\l_tmpa_box}
+  \pbs_pdfannot:nnnn{\l_box_wd_tl}{\l_box_ht_tl}{\l_box_dp_tl}{
+    /Subtype/RichMedia
+    /BS~<</W~0/S/S>>
+    /Contents~(embedded~video~file:#3)
+    /NM~(rma:#3)
+    /AP~<</N~\pbs_pdflastxform:>>
+    /RichMediaSettings~\pbs_pdflastobj:
+    /RichMediaContent~\rmcontent
+  }
+  \phantom{#2}
+  \group_end:
+}
+\ExplSyntaxOff
 \hypersetup{colorlinks=true, urlcolor=blue, linkcolor=blue}
 \usepackage{algorithm}
 \usepackage{algpseudocode}
@@ -154,31 +212,11 @@ Instituto Tecnológico de Buenos Aires (ITBA)\\
       \begin{columns}[T]
         \begin{column}{0.50\textwidth}
           \centering{\small $N=25$}\par
-          \includemedia[
-            width=0.8\linewidth,
-            height=0.6\linewidth,
-            activate=onclick,% maybe change to the slow one ! %
-            addresource=animations/run_n25.mp4,
-            flashvars={
-                    source=animations/run_n25.mp4
-                    &autoPlay=false
-                    &loop=true
-            }
-            ]{\includegraphics[width=0.8\linewidth]{images/run_n25.png}}{VPlayer.swf}
+          \embedvideo{\includegraphics[width=0.8\linewidth]{images/run_n25.png}}{animations/run_n25.mp4}
         \end{column}\href{}{}
         \begin{column}{0.50\textwidth}
           \centering{\small $N=300$}\par
-          \includemedia[
-            width=0.8\linewidth,
-            height=0.6\linewidth,
-            activate=onclick,
-            addresource=animations/run_n300.mp4,
-            flashvars={
-                    source=animations/run_n300.mp4
-                    &autoPlay=false
-                    &loop=true
-            }
-            ]{\includegraphics[width=0.8\linewidth]{images/run_n300.png}}{VPlayer.swf}
+          \embedvideo{\includegraphics[width=0.8\linewidth]{images/run_n300.png}}{animations/run_n300.mp4}
         \end{column}
       \end{columns}
     \end{frame}
@@ -288,18 +326,7 @@ Instituto Tecnológico de Buenos Aires (ITBA)\\
 \ifshowvideo
     \begin{frame}{Evolución temporal}
   \centering
-  \includemedia[
-    width=\linewidth,
-    height=0.88\textheight,
-    keepaspectratio,
-    activate=pageopen,
-    addresource=animations/disco_r034.mp4,
-    flashvars={
-      source=animations/disco_r034.mp4
-      &autoPlay=true
-      &loop=true
-    }
-  ]{\includegraphics[width=\linewidth,height=0.88\textheight,keepaspectratio]{disco_r034.png}}{VPlayer.swf}
+  \embedvideo*{\includegraphics[width=\linewidth,height=0.88\textheight,keepaspectratio]{disco_r034.png}}{animations/disco_r034.mp4}
 \end{frame}
 \else 
     \begin{frame}{Evolución temporal}
@@ -403,18 +430,7 @@ Instituto Tecnológico de Buenos Aires (ITBA)\\
 \ifshowvideo
   \begin{frame}{Evolución temporal}
   \centering
-  \includemedia[
-    width=\linewidth,
-    height=0.88\textheight,
-    keepaspectratio,
-    activate=pageopen,
-    addresource=animations/pared_18.mp4,
-    flashvars={
-      source=animations/pared_18.mp4
-      &autoPlay=true
-      &loop=true
-    }
-  ]{\includegraphics[width=\linewidth,height=0.88\textheight,keepaspectratio]{pared_18_anim.png}}{VPlayer.swf}
+  \embedvideo*{\includegraphics[width=\linewidth,height=0.88\textheight,keepaspectratio]{pared_18_anim.png}}{animations/pared_18.mp4}
 \end{frame}
 \else 
     \begin{frame}{Evolución temporal}

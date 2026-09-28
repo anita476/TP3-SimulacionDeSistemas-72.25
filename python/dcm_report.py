@@ -8,7 +8,7 @@ Qué calcula:
   temporal (el cuadro inicial). Cada punto es un cuadro guardado por el motor (cada
   10 eventos y en cada gol), en su tiempo físico; no se interpola.
 - En cada realización se ajusta DCM = 4 D t + b por cuadrados mínimos (D y b libres)
-  en [0, t_m], con t_m = inicio de la meseta estimado visualmente (cortes.txt).
+  en [0, t_e], con t_e = inicio de la meseta estimado visualmente (cortes.txt).
   D = pendiente / 4 (en 2D, <Δr²> = 4Dt).
 - El DCM no tiene un tramo con pendiente 1 sostenida en log-log (ver
   dcm_pendiente_local.txt): D es un coeficiente aparente, que depende del intervalo.
@@ -19,7 +19,7 @@ Qué calcula:
   realizaciones. El promedio, el error estándar de la media y el error del ajuste
   van en la tabla completa como referencia.
 
-Para cambiar un t_m: editar docs/results/1.3/cortes.txt y volver a correr.
+Para cambiar un t_e: editar docs/results/1.3/cortes.txt y volver a correr.
 
 Lee (salidas de run.py, N = 100, k = 10, tf = 30 s):
     data/1.3/t30/<config>/run_401.txt         realización de ejemplo
@@ -80,7 +80,7 @@ def read_cuts() -> dict[str, float]:
             cuts[name] = float(value)
     missing = [c for c, *_ in CONFIGS if c not in cuts]
     if missing:
-        raise SystemExit(f"{CUTS_FILE}: falta t_m de {', '.join(missing)}")
+        raise SystemExit(f"{CUTS_FILE}: falta t_e de {', '.join(missing)}")
     return cuts
 
 
@@ -143,22 +143,22 @@ def main() -> None:
 
     with (OUT / "dcm_resultados.txt").open("w", encoding="utf-8") as fh:
         fh.write("# 1.3 — DCM y coeficiente de difusión aparente. N = 100, tf = 30 s, cuadros cada 10 eventos.\n")
-        fh.write("# t_m: inicio de la meseta, estimado visualmente sobre la realización de ejemplo (cortes.txt).\n")
-        fh.write("# D: ajuste DCM = 4Dt + b en [0, t_m], D = pendiente/4.\n")
+        fh.write("# t_e: inicio de la meseta, estimado visualmente sobre la realización de ejemplo (cortes.txt).\n")
+        fh.write("# D: ajuste DCM = 4Dt + b en [0, t_e], D = pendiente/4.\n")
         fh.write("# VALOR INFORMADO: D_ej = realización única (semilla 401), ± D_sd = desvío estándar de D entre\n")
         fh.write("#   las 10 realizaciones (semillas 401-410), usado como incertidumbre.\n")
         fh.write("# Referencia: D_media y D_sem (promedio y error estándar de la media de las 10);\n")
         fh.write("#   D_ej_err_ajuste (error del ajuste; subestima: los residuos de una curva están correlacionados).\n")
-        fh.write("# D_sens_min/max: D de la realización 401 con inicio 0 o 0.3 s y final 0.75, 1 o 1.25 t_m.\n")
-        fh.write("# meseta_ej: DCM medio entre t_m y 30 s en la realización 401; meseta_sd: desvío entre las 10.\n")
+        fh.write("# D_sens_min/max: D de la realización 401 con inicio 0 o 0.3 s y final 0.75, 1 o 1.25 t_e.\n")
+        fh.write("# meseta_ej: DCM medio entre t_e y 30 s en la realización 401; meseta_sd: desvío entre las 10.\n")
         fh.write(f"# t90: del 1.2 ({N_T90} realizaciones, semillas 601-612), no recalculado acá; t90_sem = t90_sd/sqrt({N_T90}).\n")
-        fh.write("config divide_mesa t_m D_media D_sd D_sem D_ej D_ej_err_ajuste puntos_ej D_sens_min D_sens_max "
+        fh.write("config divide_mesa t_e D_media D_sd D_sem D_ej D_ej_err_ajuste puntos_ej D_sens_min D_sens_max "
                  "meseta_ej meseta_media meseta_sd t90 t90_sd t90_sem\n")
         for r in rows:
             fh.write(f"{r['c']} {r['divides']} {r['tm']:g} {r['d']:.5f} {r['sd']:.5f} {r['sem']:.5f} "
                      f"{r['d_ex']:.5f} {r['se_ex']:.5f} {r['n_ex']} {r['sens_lo']:.5f} {r['sens_hi']:.5f} "
                      f"{r['pl_ex']:.4f} {r['pl']:.4f} {r['pl_sd']:.4f} {r['t90']} {r['t90_sd']} {r['t90_sem']:.2f}\n")
-            print(f"{r['c']:9s} t_m {r['tm']:4g} s  D(401) = {r['d_ex']:.5f} ± {r['sd']:.5f}  (media 10: {r['d']:.5f})  "
+            print(f"{r['c']:9s} t_e {r['tm']:4g} s  D(401) = {r['d_ex']:.5f} ± {r['sd']:.5f}  (media 10: {r['d']:.5f})  "
                   f"sens [{r['sens_lo']:.5f}, {r['sens_hi']:.5f}]  meseta(401) {r['pl_ex']:.3f} ± {r['pl_sd']:.3f} m²")
 
     # Pendiente local en log-log, promedio de las 10 semillas, ventanas [t, 1.5 t]
@@ -193,7 +193,7 @@ def main() -> None:
     table = [macros[0],
              r"\begin{tabular}{lccc}",
              r"  \hline",
-             r"  configuración & $t_m$ (s) & $D$ (m$^{2}$/s) & $\langle t_{90}\rangle$ (s) \\",
+             r"  configuración & $t_e$ (s) & $D$ (m$^{2}$/s) & $\langle t_{90}\rangle$ (s) \\",
              r"  \hline"]
     for r in rows:
         v, e = rounded(r["d_ex"], r["sd"])
@@ -212,14 +212,14 @@ def main() -> None:
     ptab += [r"  \hline", r"\end{tabular}"]
     (PRES / "dcm_pendiente.tex").write_text("\n".join(ptab) + "\n", encoding="utf-8")
 
-    # Figura por configuración: realización de ejemplo, recta del ajuste y t_m
+    # Figura por configuración: realización de ejemplo, recta del ajuste y t_e
     (OUT / "t30").mkdir(parents=True, exist_ok=True)
     for r in rows:
         s = example[r["c"]]
         fig, ax = new_figure()
         ax.plot([t for t, _ in s], [m for _, m in s], color=BLUE, lw=1.2, zorder=3, label="simulación")
         ax.plot([0, r["tm"]], [r["b_ex"], r["b_ex"] + 4 * r["d_ex"] * r["tm"]], color=VERMILLION, lw=2.5,
-                zorder=4, label=r"ajuste en $[0, t_m]$")
+                zorder=4, label=r"ajuste en $[0, t_e]$")
         ax.axvline(r["tm"], color="gray", ls="--", lw=1.5, zorder=2)
         style_axes(ax, "tiempo (s)", r"DCM (m$^2$)")
         ax.set_xlim(0, 30)

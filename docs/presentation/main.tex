@@ -1,6 +1,7 @@
 \documentclass[aspectratio=169,10pt]{beamer}
 \def\animbuild{0} % 1 = animaciones
 \input{estilo}
+\input{dcm_valores} % D y cortes del 1.3, generados por python/dcm_report.py
 \usepackage{caption}
 \usepackage{media9}
 \hypersetup{colorlinks=true, urlcolor=blue, linkcolor=blue}
@@ -10,7 +11,7 @@
 
 
 \newif\ifshowvideo 
-\showvideotrue
+\showvideofalse
 %% cambiar para mostrar las animaciones embebdidas o los stills$$
 
 \title[TP3]{Trabajo Práctico Nro. 3: Simulación Dirigida por Eventos}
@@ -32,29 +33,37 @@ Instituto Tecnológico de Buenos Aires (ITBA)\\
 
 \begin{frame}{Modelo}
   \begin{columns}[T]
-    \begin{column}{0.56\textwidth}
+    \begin{column}{0.48\textwidth}
       \textbf{Partículas}\par\vspace{4pt}
-      \setlength{\abovedisplayskip}{0pt}\setlength{\abovedisplayshortskip}{0pt}
-      \begin{align}
-        \vv{r}_i(t+\Delta t) &= \vv{r}_i(t) + \vv{v}_i(t)\,\Delta t \\[2pt]
-        \vv{v}_i(t+\Delta t) &= \vv{v}_i(t) \\[4pt]
-        \left|\vv{r}_j-\vv{r}_i\right| &= r_i+r_j
-      \end{align}
+      \setlength{\abovedisplayskip}{0pt}
+      \setlength{\abovedisplayshortskip}{0pt}
+
+      \begin{align*}
+        \vv{r}_i(t+t_c) &= \vv{r}_i(t) + \vv{v}_i(t)\,t_c \\[2pt]
+        \vv{v}_i((t+t_c)^-) &= \vv{v}_i(t) \\[4pt]
+        \|\vv{r}_j-\vv{r}_i\| &= r_i+r_j
+      \end{align*}
+
+      {\footnotesize $t_c$: tiempo hasta el próximo evento.}
     \end{column}
-    \begin{column}{0.42\textwidth}
-    
+
+    \begin{column}{0.50\textwidth}
       \textbf{Colisiones}\par\vspace{4pt}
-      \setlength{\abovedisplayskip}{0pt}\setlength{\abovedisplayshortskip}{0pt}
-      \begin{align}
+      \setlength{\abovedisplayskip}{0pt}
+      \setlength{\abovedisplayshortskip}{0pt}
+
+      \begin{align*}
         \vv{v}_i' &= \vv{v}_i + \frac{J}{m_i}\,\vv{n} \\[2pt]
         \vv{v}_j' &= \vv{v}_j - \frac{J}{m_j}\,\vv{n} \\[2pt]
         J &= \frac{2m_i m_j}{m_i+m_j}
         (\vv{v}_j-\vv{v}_i)\cdot\vv{n}
-      \end{align}
-      \vspace{-2pt}
+      \end{align*}
+
       {\footnotesize
-      $\vv{n}=(\vv{r}_j-\vv{r}_i)/(r_i+r_j)$: normal de contacto.\\
-      Choques elásticos e instantáneos.}
+        $\vv{n}=(\vv{r}_j-\vv{r}_i)/(r_i+r_j)$:
+        normal de contacto.\\[3pt]
+        Choques elásticos e instantáneos.
+      }
     \end{column}
   \end{columns}
 \end{frame}
@@ -192,7 +201,9 @@ Instituto Tecnológico de Buenos Aires (ITBA)\\
           \begin{figure}
               \centering
               \includegraphics[width=1\linewidth]{images//run_n25.png}
-                \caption*{\url{https://youtu.be/YLUzrKhZ1tk?si=lCsZFdOF7eCQ861F}}        
+                \caption*{\url{
+            MISSING
+                }}        
             \end{figure}
         \end{column}\href{}{}
         \begin{column}{0.50\textwidth}
@@ -200,7 +211,7 @@ Instituto Tecnológico de Buenos Aires (ITBA)\\
           \begin{figure}
               \centering
               \includegraphics[width=1\linewidth]{images//run_n300.png}
-                \caption*{\url{https://youtu.be/T5pF2ItgVro?si=vIakdxHiGBWuPmSO}}        
+                \caption*{\url{MISSING}}        
             \end{figure}
         \end{column}
       \end{columns}
@@ -278,7 +289,7 @@ Instituto Tecnológico de Buenos Aires (ITBA)\\
     \end{column}
     \begin{column}{0.34\textwidth}
       \begin{parametros}
-        \item $R = 0.34\,\mathrm{m} = W/2$
+        \item $R = 0.34\,\mathrm{m} = M/2$
         \item Centro $(0.60,\ 0.34)\,\mathrm{m}$
       \end{parametros}
       \begin{resultado}
@@ -312,7 +323,7 @@ Instituto Tecnológico de Buenos Aires (ITBA)\\
           \begin{figure}
               \centering
           \includegraphics[width=\linewidth,height=0.78\textheight,keepaspectratio]{disco_r034.png}
-                \caption*{\url{https://youtu.be/NNNVMJjTYGE?si=EVOp4JaLgAom3JTu}}        
+                \caption*{\url{MISSING}}        
             \end{figure}
     \end{frame}
     
@@ -377,7 +388,7 @@ Instituto Tecnológico de Buenos Aires (ITBA)\\
     \begin{column}{0.34\textwidth}
       \begin{parametros}
         \item 9 columnas
-        \item Ancho $= W$
+        \item Ancho $= M$
         \item Centro $x = 0.60\,\mathrm{m}$
       \end{parametros}
       \begin{resultado}
@@ -427,7 +438,7 @@ Instituto Tecnológico de Buenos Aires (ITBA)\\
           \begin{figure}
               \centering
           \includegraphics[width=\linewidth,height=0.78\textheight,keepaspectratio]{pared_18_anim.png}
-                \caption*{\url{https://youtu.be/g3FZ9KBazS8?si=x4ou6pS7r4zBt_vN}}        
+                \caption*{\url{MISSING}}        
             \end{figure}
     \end{frame}
     
@@ -458,41 +469,72 @@ Instituto Tecnológico de Buenos Aires (ITBA)\\
 \begin{frame}{Desplazamiento cuadrático medio}
   \begin{cols}
     \begin{column}{0.62\textwidth}
-      \figura{msd_vacia.png}
+      \figura{dcm_vacia.png}
     \end{column}
     \begin{column}{0.34\textwidth}
       \begin{parametros}
-        \item Mesa vacía
-        \item Una realización
-        \item De $0.5\,\mathrm{s}$ a $1.5\,\mathrm{s}$
+        \item Mesa vacía, $N = 100$, $t_f = 30\,\mathrm{s}$
+        \item $t_m = \DcmCortevacia\,\mathrm{s}$: inicio del estacionario
+        \item Ajuste de $4Dt + b$ en $[0, t_m]$
       \end{parametros}
       \begin{resultado}
-        \item $D = 0.0169\,\mathrm{m}^{2}/\mathrm{s}$
+        \item $D = \DcmDvacia\,\mathrm{m}^{2}/\mathrm{s}$
+      \end{resultado}
+      {\scriptsize $D$: una realización; $\pm$: desvío entre $10$ realizaciones.}
+    \end{column}
+  \end{cols}
+\end{frame}
+
+\begin{frame}{Ajuste de $\langle \Delta r^{2}\rangle = 4Dt + b$}
+  \begin{cols}
+    \begin{column}{0.62\textwidth}
+      \figura{dcm_error.png}
+    \end{column}
+    \begin{column}{0.34\textwidth}
+      \begin{parametros}
+        \item Puntos en $[0, t_m]$ de la misma realización
+      \end{parametros}
+      \begin{resultado}
+        \item $D^{*} = \DcmDejemplo\,\mathrm{m}^{2}/\mathrm{s}$
       \end{resultado}
     \end{column}
   \end{cols}
 \end{frame}
 
+\begin{frame}{Desplazamiento cuadrático medio según la configuración}
+  \begin{cols}
+    \begin{column}{0.62\textwidth}
+      \figura{dcm_configs.png}
+    \end{column}
+    \begin{column}{0.34\textwidth}
+      \begin{parametros}
+        \item Una realización por configuración
+        \item Misma semilla, $t_f = 30\,\mathrm{s}$
+      \end{parametros}
+    \end{column}
+  \end{cols}
+\end{frame}
+
 \begin{frame}{$D$ y $\langle t_{90}\rangle$}
-  \centering\large
-  \renewcommand{\arraystretch}{1.45}
-  \begin{tabular}{lcc}
-    \hline
-    configuración & $D$ (m$^{2}$/s) & $\langle t_{90}\rangle$ (s) \\
-    \hline
-    pared de 9 columnas & $0.00337$ & $14.21 \pm 1.41$ \\
-    pared de 18 columnas & $0.00497$ & $13.67 \pm 1.31$ \\
-    disco de radio $0.34\,\mathrm{m}$ & $0.00577$ & $16.96 \pm 1.99$ \\
-    mesa vacía & $0.0169$ & $23.76 \pm 3.22$ \\
-    \hline
-  \end{tabular}
-  \par\vspace{10pt}
-  {\footnotesize $D$: una realización \quad $\langle t_{90}\rangle$: $12$ realizaciones}
+  \centering\small
+  \renewcommand{\arraystretch}{1.35}
+  \input{dcm_tabla}
+  \par\vspace{8pt}
 \end{frame}
 
 \begin{frame}{$D$ en función de $\langle t_{90}\rangle$}
-  \centering
-  \figura{d_vs_t90.png}
+  \begin{cols}
+    \begin{column}{0.62\textwidth}
+      \figura{d_vs_t90.png}
+    \end{column}
+    \begin{column}{0.34\textwidth}
+      \begin{resultado}
+        \item Mesa vacía: mayor $D$ y mayor $\langle t_{90}\rangle$
+        \item Con obstáculos, $D$ entre $0.002$ y $0.004\,\mathrm{m}^{2}/\mathrm{s}$
+      \end{resultado}
+      {\footnotesize Barras: desvío estándar entre realizaciones ($10$ para $D$, $12$ para $\langle t_{90}\rangle$).}
+    \end{column}
+  \end{cols}
 \end{frame}
 
 \begin{frame}{Conclusiones}
@@ -500,7 +542,7 @@ Instituto Tecnológico de Buenos Aires (ITBA)\\
     \item Hasta $N \approx 300$ el tiempo \textbf{crece como} $N^{3}$.
     \item Separar la mesa \textbf{en dos} \textbf{baja} $\langle t_{90}\rangle$.
     \item \textbf{Poco o demasiado} espacio a cada lado \textbf{lo alarga}.
-    \item En general, a \textbf{menor} $D$, \textbf{menor} ${\langle t_{90}\rangle}$.
+    \item La mesa vacía tiene el \textbf{mayor} $D$ aparente y el \textbf{mayor} $\langle t_{90}\rangle$; con obstáculos, $D$ \textbf{no ordena} $\langle t_{90}\rangle$.
   \end{itemize}
 \end{frame}
 
@@ -510,6 +552,7 @@ Instituto Tecnológico de Buenos Aires (ITBA)\\
 
 \appendix
 \section*{Apéndice}
+
 
 \begin{frame}{Apéndice: por qué el ajuste usa $N \leq 300$}
 \end{frame}

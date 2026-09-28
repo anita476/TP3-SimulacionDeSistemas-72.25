@@ -32,11 +32,12 @@ def main() -> None:
         label=r"$R$ = 0.0175 m",
     )
     empty_mean, empty_std = 23.7617, 3.21995
-    chosen_mean, chosen_std = 15.6094, 2.47278
+    # Disco de R = 0.34 m, el que tapa el alto. docs/results/1.2/disco_radio.txt
+    disk_mean, disk_std = 16.9586, 1.985
     ax.axhspan(empty_mean - empty_std, empty_mean + empty_std, color=VERMILLION, alpha=0.15, zorder=0)
     ax.axhline(empty_mean, color=VERMILLION, linestyle="--", zorder=1, label="mesa vacía")
-    ax.axhspan(chosen_mean - chosen_std, chosen_mean + chosen_std, color="0.45", alpha=0.18, zorder=0)
-    ax.axhline(chosen_mean, color="0.25", linestyle=":", zorder=1, label="elegida")
+    ax.axhspan(disk_mean - disk_std, disk_mean + disk_std, color="0.45", alpha=0.18, zorder=0)
+    ax.axhline(disk_mean, color="0.25", linestyle=":", zorder=1, label="disco")
     style_axes(ax, "columnas", r"tiempo $t_{90}$ (s)")
     ax.set_ylim(8, 28)
     legend = place_legend_below(ax, ncol=3)

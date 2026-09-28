@@ -40,7 +40,7 @@ def main() -> None:
             label=f"{cols} col.",
         )
     ax.axhline(23.7617, color=VERMILLION, linestyle="--", label="mesa vacía")
-    ax.axhline(15.6094, color="0.25", linestyle=":", label="elegida")
+    ax.axhline(16.9586, color="0.25", linestyle=":", label="disco")
     style_axes(ax, r"centro de la pared $x$ (m)", r"tiempo $t_{90}$ (s)")
     ax.set_ylim(0, 42)
     handles, labels = ax.get_legend_handles_labels()

@@ -69,8 +69,8 @@ def run_engine(
     tmax: float,
     k: int,
     obstacles: Path | None,
-    init: str,
     out: Path | None,
+    init: str = "random",
 ) -> dict[str, str]:
     cmd = [
         str(exe),
@@ -291,7 +291,7 @@ def main() -> None:
             for seed in seeds:
                 summary = run_engine(
                     args.exe, n, args.r, seed,
-                    args.tmax, args.k, args.obstacles, args.init, None,
+                    args.tmax, args.k, args.obstacles, None, init=args.init,
                 )
 
                 append_row(
@@ -358,7 +358,7 @@ def main() -> None:
         seed, out = job
         return run_engine(
             args.exe, n, args.r, seed,
-            args.tmax, args.k, obstacles, args.init, out,
+            args.tmax, args.k, obstacles, out, init=args.init,
         )
 
     workers = min(args.jobs, args.reps)

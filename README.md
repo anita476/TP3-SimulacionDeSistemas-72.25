@@ -289,4 +289,21 @@ python3 python/animate.py --traj data/demo.txt \
     --inset --arrows --mp4 data/figs/demo.mp4 --fps 10
 ```
 
-El MP4 requiere `ffmpeg`.
+> Requiere `ffmpeg`.
+
+
+### Configuración ganadora
+```bash
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release && cmake --build build -j
+```
+
+```bash
+./build/EventDrivenSim \
+    -N 100 \
+    -tmax 100 \
+    -k 100 \
+    -obstacles configs/config_ganadora.txt \
+    --out data/presentation/runX.txt
+```
+
+

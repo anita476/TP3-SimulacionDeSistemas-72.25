@@ -168,10 +168,10 @@ def print_run_summary(
     )
 
     if k == 0:
-        print("  Frames:                   initial state and goals")
+        print("  Frames:                   goals")
     else:
         print(
-            f"  Frames:                   initial, every {k} collisions, "
+            f"  Frames:                   every {k} collisions, "
             "and goals"
         )
 
@@ -196,10 +196,6 @@ def print_run_summary(
     print(f"  Relative energy drift:    {drift_text}")
 
     print(
-        "\nEvent queue diagnostics\n"
-        f"  Stale events discarded:   {int(summary['discarded']):,}\n"
-        f"  Zero-time events:         {int(summary['zero_dt']):,}\n"
-        f"  Peak queue entries:       {int(summary['max_queue']):,}\n"
         "\nExecution time\n"
         f"  Initialization:           {1000 * float(summary['init_seconds']):.3f} ms\n"
         f"  Event processing:         {1000 * float(summary['loop_seconds']):.3f} ms\n"

@@ -66,9 +66,9 @@ void print_summary(const Simulation &sim, const SimParams &params,
     std::cout << "  Trajectory file:          " << out_path << '\n';
 
     if (params.k == 0) {
-      std::cout << "  Frames:                   initial state and goals\n";
+      std::cout << "  Frames:                   goals\n";
     } else {
-      std::cout << "  Frames:                   initial state, every "
+      std::cout << "  Frames:                   every "
                 << params.k << " physical collisions, and goals\n";
     }
   }
@@ -112,11 +112,6 @@ void print_summary(const Simulation &sim, const SimParams &params,
   //               << "  Absolute energy change:   "
   //               << std::fabs(final_energy - initial_energy) << " J\n";
   // }
-
-  std::cout << "\nEvent queue diagnostics\n"
-            << "  Stale events discarded:   " << stats.discarded << '\n'
-            << "  Zero-time events:         " << stats.zero_dt << '\n'
-            << "  Peak queue entries:       " << stats.max_queue << '\n';
 
   std::cout << "\nExecution time\n"
             << std::fixed << std::setprecision(3)

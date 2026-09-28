@@ -55,6 +55,7 @@ PRES = ROOT / "docs" / "presentation"
 CUTS_FILE = OUT / "cortes.txt"
 SEEDS = range(401, 411)
 EXAMPLE_SEED = 401
+SHORT_WINDOW = 1.0  # s: ventana fija del apéndice, para ver si la tendencia depende de t_e
 L, W, R = 1.20, 0.68, 0.0175
 N_T90 = 12  # realizaciones de <t90> (punto 1.2, semillas 601-612; no se recalcula acá)
 
@@ -162,6 +163,7 @@ def main() -> None:
         d_ex, b_ex, se_ex, n_ex = fit(example[c], 0.0, tm)
         ds = [fit(s, 0.0, tm)[0] for s in seeds[c]]
         sens = [fit(example[c], a, f * tm)[0] for a in (0.0, 0.3) for f in (0.75, 1.0, 1.25)]
+        d_short = [fit(s, 0.0, SHORT_WINDOW)[0] for s in seeds[c]]
         plateaus = [st.mean(m for t, m in s if t >= tm) for s in seeds[c]]
         pl_ex = st.mean(m for t, m in example[c] if t >= tm)
         rows.append(dict(c=c, label=label, macro=macro, divides=divides, color=color, tm=tm,
@@ -169,7 +171,8 @@ def main() -> None:
                          d=st.mean(ds), sd=st.stdev(ds), sem=st.stdev(ds) / math.sqrt(len(ds)),
                          sens_lo=min(sens), sens_hi=max(sens),
                          pl=st.mean(plateaus), pl_sd=st.stdev(plateaus), pl_ex=pl_ex,
-                         t90=t90, t90_sd=t90_sd, t90_sem=t90_sd / math.sqrt(N_T90)))
+                         t90=t90, t90_sd=t90_sd, t90_sem=t90_sd / math.sqrt(N_T90),
+                         d_short=st.mean(d_short), sd_short=st.stdev(d_short)))
 
     with (OUT / "dcm_resultados.txt").open("w", encoding="utf-8") as fh:
         fh.write("# 1.3 — DCM y coeficiente de difusión aparente. N = 100, tf = 30 s, cuadros cada 10 eventos.\n")
@@ -217,6 +220,12 @@ def main() -> None:
     macros.append(rf"\newcommand{{\DcmDejemplo}}{{{vac['d_ex']:.4f}}}")
     pv, pe = rounded(vac["pl_ex"], vac["pl_sd"])
     macros.append(rf"\newcommand{{\DcmMesetavacia}}{{{pv} \pm {pe}}}")
+    # Apéndice con ventana fija: D de la mesa vacía (promedio de 10) y el ajuste de la semilla 401
+    v1, e1 = rounded(vac["d_short"], vac["sd_short"])
+    d1_ex, b1_ex = fit(example["vacia"], 0.0, SHORT_WINDOW)[:2]
+    macros += [rf"\newcommand{{\DcmDvaciaCorta}}{{{v1} \pm {e1}}}",
+               rf"\newcommand{{\DcmDejemploCorta}}{{{d1_ex:.4f}}}",
+               rf"\newcommand{{\DcmVentanaCorta}}{{{SHORT_WINDOW:g}}}"]
     (PRES / "dcm_valores.tex").write_text("\n".join(macros) + "\n", encoding="utf-8")
 
     table = [macros[0],
@@ -231,6 +240,18 @@ def main() -> None:
         table.append(rf"  {TABLE_NAMES[r['c']]} & {covered(r['c']):.0f}\,\% & ${r['tm']:g}$ & ${v} \pm {e}$ & ${tv} \pm {te}$ \\")
     table += [r"  \hline", r"\end{tabular}"]
     (PRES / "dcm_tabla.tex").write_text("\n".join(table) + "\n", encoding="utf-8")
+
+    # Apéndice: misma tabla con D ajustado en una ventana fija [0, SHORT_WINDOW] para todas
+    short = [macros[0], r"\begin{tabular}{lcccc}", r"  \hline",
+             rf"  configuración & área ocupada & $D$, $[0, t_e]$ & $D$, $[0, {SHORT_WINDOW:g}\,\mathrm{{s}}]$ & $\langle t_{{90}}\rangle$ (s) \\",
+             r"  \hline"]
+    for r in sorted(rows, key=lambda r: r["d"], reverse=True):
+        v, e = rounded(r["d"], r["sd"])
+        v1, e1 = rounded(r["d_short"], r["sd_short"])
+        tv, te = rounded(r["t90"], r["t90_sd"])
+        short.append(rf"  {TABLE_NAMES[r['c']]} & {covered(r['c']):.0f}\,\% & ${v} \pm {e}$ & ${v1} \pm {e1}$ & ${tv} \pm {te}$ \\")
+    short += [r"  \hline", r"\end{tabular}"]
+    (PRES / "dcm_tabla_ventana.tex").write_text("\n".join(short) + "\n", encoding="utf-8")
 
     # Pendiente local para el apéndice: algunas ventanas representativas
     cols = [1, 3, 5, 7, 9, 11]
@@ -312,6 +333,46 @@ def main() -> None:
     ax.legend(loc="upper left", frameon=True)
     save_figure(fig, OUT / "d_vs_t90.png")
 
+    # Apéndice, ventana fija [0, SHORT_WINDOW]: las mismas figuras que las diapositivas principales
+    s = example["vacia"]
+    fig, ax = new_figure()
+    ax.plot([t for t, _ in s], [m for _, m in s], color=BLUE, lw=1.2, zorder=3, label="simulación")
+    ax.plot([0, SHORT_WINDOW], [b1_ex, b1_ex + 4 * d1_ex * SHORT_WINDOW], color=VERMILLION, lw=2.5, zorder=4,
+            label=rf"ajuste en $[0, {SHORT_WINDOW:g}\,\mathrm{{s}}]$")
+    ax.axvline(SHORT_WINDOW, color="gray", ls="--", lw=1.5, zorder=2)
+    style_axes(ax, "tiempo (s)", r"DCM (m$^2$)")
+    ax.set_xlim(0, 10)
+    ax.set_ylim(0, max(m for _, m in s) * 1.4)
+    ax.legend(loc="upper left", frameon=True)
+    save_figure(fig, OUT / "respaldo_v1_vacia.png")
+
+    pts = [(t, m) for t, m in s if 0.0 <= t <= SHORT_WINDOW]
+    grid = [2 * d1_ex * i / 400 for i in range(1, 401)]
+    errs = []
+    for dt in grid:
+        bb = st.mean(m - 4 * dt * t for t, m in pts)
+        errs.append(sum((m - bb - 4 * dt * t) ** 2 for t, m in pts))
+    d_best = grid[errs.index(min(errs))]
+    fig, ax = new_figure()
+    ax.plot(grid, errs, color=BLUE, lw=2, zorder=3)
+    ax.axvline(d_best, color=VERMILLION, ls="--", zorder=2, label=rf"$D^* = {d_best:.4f}\,$m$^2$/s")
+    style_axes(ax, r"$D$ (m$^2$/s)", r"$E(D)$ (m$^4$)")
+    ax.set_ylim(0, max(errs) * 1.35)
+    apply_sci_axis(ax, "y")
+    ax.legend(loc="upper center", frameon=True)
+    save_figure(fig, OUT / "respaldo_v1_error.png")
+
+    fig, ax = new_figure()
+    for r in rows:
+        s = [(t, m) for t, m in example[r["c"]] if t <= 2 * SHORT_WINDOW]
+        ax.plot([t for t, _ in s], [m for _, m in s], color=r["color"], lw=1.6, zorder=3, label=SHORT[r["c"]])
+    ax.axvline(SHORT_WINDOW, color="gray", ls="--", lw=1.5, zorder=2)
+    style_axes(ax, "tiempo (s)", r"DCM (m$^2$)")
+    ax.set_xlim(0, 2 * SHORT_WINDOW)
+    ax.set_ylim(0, max(m for r in rows for t, m in example[r["c"]] if t <= 2 * SHORT_WINDOW) * 1.7)
+    ax.legend(loc="upper left", ncol=2, frameon=True, columnspacing=0.8, handlelength=1.2)
+    save_figure(fig, OUT / "respaldo_v1_configs.png")
+
     # Respaldo: las seis curvas de 30 s (semilla 401) con su t_e y la recta del ajuste
     import matplotlib.pyplot as plt
     fig, axs = plt.subplots(2, 3, figsize=(15, 8), layout="constrained")
@@ -332,7 +393,8 @@ def main() -> None:
     fig.savefig(OUT / "respaldo_te_configs.png", dpi=150)
     plt.close(fig)
 
-    for name in ("dcm_vacia", "dcm_error", "dcm_configs", "dcm_loglog", "d_vs_t90", "respaldo_te_configs"):
+    for name in ("dcm_vacia", "dcm_error", "dcm_configs", "dcm_loglog", "d_vs_t90", "respaldo_te_configs",
+                 "respaldo_v1_vacia", "respaldo_v1_error", "respaldo_v1_configs"):
         shutil.copyfile(OUT / f"{name}.png", PRES / "images" / f"{name}.png")
     print("figuras copiadas a docs/presentation/images/; macros y tabla en docs/presentation/")
 

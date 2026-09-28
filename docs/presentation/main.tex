@@ -606,4 +606,102 @@ Instituto Tecnológico de Buenos Aires (ITBA)\\
   {$D$: promedio de $10$ realizaciones $\pm$ desvío estándar. Pared $R = r$, centro $x = 0.60\,\mathrm{m}$.}
 \end{frame}
 
+% Apéndice: las diapositivas del DCM repetidas con una ventana fija [0, 1 s] para todas
+% (SHORT_WINDOW en python/dcm_report.py).
+\begin{frame}[noframenumbering]{Apéndice $[0, 1\,\mathrm{s}]$: desplazamiento cuadrático medio}
+  \begin{cols}
+    \begin{column}{0.62\textwidth}
+      \figura{respaldo_v1_vacia.png}
+    \end{column}
+    \begin{column}{0.34\textwidth}
+      \begin{parametros}
+        \item Mesa vacía, $N = 100$, semilla 401
+        \item Ajuste de $4Dt + b$ en $[0, \DcmVentanaCorta\,\mathrm{s}]$, igual para todas
+      \end{parametros}
+      \begin{resultado}
+        \item $D = \DcmDvaciaCorta\,\mathrm{m}^{2}/\mathrm{s}$
+      \end{resultado}
+      {\scriptsize $D$: promedio de los ajustes de $10$ realizaciones. En la principal, con $t_e$: $\DcmDvacia$.}
+    \end{column}
+  \end{cols}
+\end{frame}
+
+\begin{frame}[noframenumbering]{Apéndice $[0, 1\,\mathrm{s}]$: ajuste de $\langle \Delta r^{2}\rangle = 4Dt + b$}
+  \begin{cols}
+    \begin{column}{0.62\textwidth}
+      \figura{respaldo_v1_error.png}
+    \end{column}
+    \begin{column}{0.34\textwidth}
+      \begin{parametros}
+        \item Puntos en $[0, \DcmVentanaCorta\,\mathrm{s}]$ de una realización
+        \item Semilla 401
+      \end{parametros}
+      \begin{resultado}
+        \item $D^{*} = \DcmDejemploCorta\,\mathrm{m}^{2}/\mathrm{s}$
+      \end{resultado}
+    \end{column}
+  \end{cols}
+\end{frame}
+
+\begin{frame}[noframenumbering]{Apéndice $[0, 1\,\mathrm{s}]$: DCM según la configuración}
+  \begin{cols}
+    \begin{column}{0.62\textwidth}
+      \figura{respaldo_v1_configs.png}
+    \end{column}
+    \begin{column}{0.34\textwidth}
+      \begin{parametros}
+        \item Primeros $2\,\mathrm{s}$, una realización (semilla 401)
+        \item Punteada: fin de la ventana
+      \end{parametros}
+      \begin{resultado}
+        \item Mismos dos grupos que en $30\,\mathrm{s}$
+      \end{resultado}
+    \end{column}
+  \end{cols}
+\end{frame}
+
+\begin{frame}[noframenumbering]{Apéndice $[0, 1\,\mathrm{s}]$: $D$ y $\langle t_{90}\rangle$}
+  \centering\small
+  \renewcommand{\arraystretch}{1.3}
+  \input{dcm_tabla_ventana}
+  \par\vspace{8pt}
+  {\footnotesize Mismas $10$ realizaciones. Con $[0, 1\,\mathrm{s}]$ los valores son mayores (incluye el vuelo libre inicial),
+  pero la tendencia se mantiene: mayor $D$ en la mesa vacía, menor con más área ocupada.}
+\end{frame}
+
+\begin{frame}[noframenumbering]{Apéndice $[0, 1\,\mathrm{s}]$: $\langle t_{90}\rangle$ y $D$ según las columnas}
+  \begin{cols}
+    \begin{column}{0.62\textwidth}
+      \figura{respaldo_v1_columnas.png}
+    \end{column}
+    \begin{column}{0.34\textwidth}
+      \begin{parametros}
+        \item Pared $R = r$, centro $x = 0.60\,\mathrm{m}$
+        \item Línea punteada: 18 columnas
+      \end{parametros}
+      \begin{resultado}
+        \item $D$ baja al agregar columnas
+        \item $\langle t_{90}\rangle$ mínimo en 18 columnas
+      \end{resultado}
+    \end{column}
+  \end{cols}
+\end{frame}
+
+\begin{frame}[noframenumbering]{Apéndice: $D$ con las dos ventanas en el barrido de columnas}
+  \begin{cols}
+    \begin{column}{0.62\textwidth}
+      \figura{respaldo_ventana_barrido.png}
+    \end{column}
+    \begin{column}{0.34\textwidth}
+      \begin{parametros}
+        \item Pared $R = r$, centro $x = 0.60\,\mathrm{m}$
+        \item Punteada: 18 columnas
+      \end{parametros}
+      \begin{resultado}
+        \item Con las dos ventanas, $D$ baja al agregar columnas
+      \end{resultado}
+    \end{column}
+  \end{cols}
+\end{frame}
+
 \end{document}

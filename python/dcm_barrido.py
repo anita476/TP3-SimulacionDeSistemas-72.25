@@ -29,7 +29,7 @@ ROOT = HERE.parent
 sys.path.insert(0, str(HERE))
 sys.path.insert(0, str(HERE / "lib"))
 
-from dcm_report import fit, parse_te, rounded
+from dcm_report import SHORT_WINDOW, fit, parse_te, rounded
 from pared import wall, write_config
 from plot_style import BLUE, VERMILLION, new_figure, save_figure, style_axes
 from run import DEFAULT_EXE, run_engine
@@ -133,10 +133,13 @@ def cmd_report(te: list[str]) -> None:
         print("t_e por parámetro:", ", ".join(te), "(cortes_barrido.txt no se modifica)")
     t90 = {int(r["columnas"]): (float(r["t90_mean"]), float(r["t90_std"])) for r in load_table(
         T90_TABLE, ("radio", "columnas", "ancho", "x", "K", "t90_mean", "t90_std"))}
-    rows = []
+    rows, shorts = [], []
     for c in COLUMNS:
-        ds = [fit(read_msd(DATA / f"pared_{c}" / f"msd_{s}.txt"), 0.0, cuts[c])[0] for s in SEEDS]
+        curves = [read_msd(DATA / f"pared_{c}" / f"msd_{s}.txt") for s in SEEDS]
+        ds = [fit(m, 0.0, cuts[c])[0] for m in curves]
         rows.append((c, cuts[c], st.mean(ds), st.stdev(ds), *t90[c]))
+        d_short = [fit(m, 0.0, SHORT_WINDOW)[0] for m in curves]
+        shorts.append((st.mean(d_short), st.stdev(d_short)))
     OUT.mkdir(parents=True, exist_ok=True)
     lines = ["columnas t_e D_media D_sd t90_mean t90_std"]
     lines += [f"{c} {te:g} {d:.6g} {sd:.6g} {m:g} {s:g}" for c, te, d, sd, m, s in rows]
@@ -193,6 +196,31 @@ def cmd_report(te: list[str]) -> None:
     fig.savefig(OUT / "respaldo_te_barrido.png", dpi=110)
     plt.close(fig)
     shutil.copyfile(OUT / "respaldo_te_barrido.png", ROOT / "docs" / "presentation" / "images" / "respaldo_te_barrido.png")
+
+    # Apéndice: la misma figura de dos paneles, con D ajustado en la ventana fija [0, SHORT_WINDOW]
+    fig, (top, bottom) = plt.subplots(2, 1, sharex=True, figsize=(6.4, 6.4), layout="constrained")
+    top.errorbar(cs, [r[4] for r in rows], yerr=[r[5] for r in rows], color=BLUE, marker="o",
+                 markeredgecolor="black", markeredgewidth=0.6, capsize=4)
+    bottom.errorbar(cs, [m for m, _ in shorts], yerr=[e for _, e in shorts], color=BLUE, marker="o",
+                    markeredgecolor="black", markeredgewidth=0.6, capsize=4)
+    for ax, ylabel in ((top, r"$\langle t_{90}\rangle$ (s)"), (bottom, r"$D$ (m$^2$/s)")):
+        ax.axvline(best[0], color=VERMILLION, ls="--", lw=1.5, zorder=0)
+        style_axes(ax, "columnas", ylabel)
+    top.tick_params(labelbottom=True)
+    save_figure(fig, OUT / "respaldo_v1_columnas.png")
+    shutil.copyfile(OUT / "respaldo_v1_columnas.png", ROOT / "docs" / "presentation" / "images" / "respaldo_v1_columnas.png")
+
+    # Apéndice: D con t_e y con la ventana fija [0, SHORT_WINDOW] en el mismo gráfico
+    fig, ax = new_figure()
+    ax.errorbar(cs, [r[2] for r in rows], yerr=[r[3] for r in rows], color=BLUE, marker="o",
+                markeredgecolor="black", markeredgewidth=0.6, capsize=4, label=r"ajuste en $[0, t_e]$")
+    ax.errorbar(cs, [m for m, _ in shorts], yerr=[e for _, e in shorts], color=VERMILLION, marker="s",
+                markeredgecolor="black", markeredgewidth=0.6, capsize=4, label=rf"ajuste en $[0, {SHORT_WINDOW:g}$ s$]$")
+    ax.axvline(best[0], color="gray", ls="--", lw=1.5, zorder=0)
+    style_axes(ax, "columnas", r"$D$ (m$^2$/s)")
+    ax.legend(loc="upper right", frameon=True)
+    save_figure(fig, OUT / "respaldo_ventana_barrido.png")
+    shutil.copyfile(OUT / "respaldo_ventana_barrido.png", ROOT / "docs" / "presentation" / "images" / "respaldo_ventana_barrido.png")
 
     half = (len(rows) + 1) // 2
     cells = []

@@ -249,7 +249,7 @@ def main() -> None:
         ax.plot([t for t, _ in s], [m for _, m in s], color=BLUE, lw=1.2, zorder=3, label="simulación")
         ax.plot([0, r["tm"]], [r["b_ex"], r["b_ex"] + 4 * r["d_ex"] * r["tm"]], color=VERMILLION, lw=2.5,
                 zorder=4, label=r"ajuste en $[0, t_e]$")
-        ax.axvline(r["tm"], color="gray", ls="--", lw=1.5, zorder=2)
+        ax.axvline(r["tm"], color="gray", ls="--", lw=1.5, zorder=2, label=rf"$t_e = {r['tm']:g}\,\mathrm{{s}}$")
         style_axes(ax, "tiempo (s)", r"DCM (m$^2$)")
         ax.set_xlim(0, 30)
         ax.set_ylim(0, max(m for _, m in s) * 1.4)

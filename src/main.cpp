@@ -46,8 +46,17 @@ void print_summary(const Simulation &sim, const SimParams &params,
             << "  Particles:                " << gen.N << '\n'
             << "  Obstacles:                " << gen.obstacles.size() << '\n'
             << "  Random seed:              " << gen.seed << '\n'
-            << std::setprecision(3)
-            << "  Maximum simulated time:   " << params.tmax << " s\n"
+            << std::setprecision(3);
+
+  if (gen.placement == Placement::Hex) {
+    std::cout << std::setprecision(2) << "  Initial positions:        "
+              << "hexagonal lattice, gap " << 100.0 * gen_stats.lattice_gap
+              << "% of 2r\n";
+  } else {
+    std::cout << "  Initial positions:        random\n";
+  }
+
+  std::cout << "  Maximum simulated time:   " << params.tmax << " s\n"
             << std::setprecision(2) << "  Occupied area:            "
             << 100.0 * gen_stats.packing_fraction << "%\n";
 
@@ -158,6 +167,11 @@ int main(int argc, char *argv[]) {
   program.add_argument("-obstacles")
       .default_value(std::string(""))
       .help("obstacle file: one 'xk yk Rk' line per obstacle (m)");
+  program.add_argument("-init")
+      .default_value(std::string("random"))
+      .choices("random", "hex")
+      .help("initial positions: random (rejection sampling) or hex (hexagonal "
+            "lattice, widest spacing that fits N; for high density)");
   program.add_argument("--out")
       .default_value(std::string(""))
       .help("dump path (empty = no dump)");
@@ -185,6 +199,7 @@ int main(int argc, char *argv[]) {
   const int seed = program.get<int>("-seed");
   const std::string obstacles_path = program.get<std::string>("-obstacles");
   const std::string out_path = program.get<std::string>("--out");
+  const std::string init = program.get<std::string>("-init");
 
   try {
     SimParams params{L, W, d, tmax, k};
@@ -202,6 +217,7 @@ int main(int argc, char *argv[]) {
     gen.v0 = v0;
     gen.obstacles = obstacles;
     gen.seed = static_cast<std::uint64_t>(seed);
+    gen.placement = init == "hex" ? Placement::Hex : Placement::Random;
     GeneratorStats gen_stats;
     std::vector<Particle> particles = generate_particles(gen, &gen_stats);
 
@@ -219,7 +235,7 @@ int main(int argc, char *argv[]) {
     const double init_seconds = seconds_since(t_init);
     const double e0 = sim.kinetic_energy();
     const auto t_loop = std::chrono::steady_clock::now();
-    sim.run(out);
+    sim.run(out, program.get<bool>("--raw") ? nullptr : &std::cout);
     const double loop_seconds = seconds_since(t_loop);
     const double e_end = sim.kinetic_energy();
     const SimStats &st = sim.stats();
@@ -234,6 +250,8 @@ int main(int argc, char *argv[]) {
                 << "tmax " << tmax << '\n'
                 << "k " << k << '\n'
                 << "packing " << gen_stats.packing_fraction << '\n'
+                << "init " << init << '\n'
+                << "lattice_gap " << gen_stats.lattice_gap << '\n'
                 << "events " << sim.events() << '\n'
                 << "wall_events " << st.wall_events << '\n'
                 << "obstacle_events " << st.obstacle_events << '\n'

@@ -1,5 +1,9 @@
 @startuml
-
+left to right direction
+skinparam dpi 160
+skinparam defaultFontSize 18
+skinparam nodesep 12
+skinparam ranksep 28
 skinparam classAttributeIconSize 0
   class Event{
     + t : double

@@ -83,7 +83,6 @@ data/
 !python/requirements.txt
 !configs/*.txt
 *.gif
-*.mp4
 data/*.png
 *.webp
 !docs/results/**/*.png

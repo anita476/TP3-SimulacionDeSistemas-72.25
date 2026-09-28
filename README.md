@@ -62,6 +62,8 @@ implementadas en `validate_obstacles()` - R_k >= r y dentro de la mesa.
 
 Para simular una mesa sin obstáculos, omitir `-obstacles`.
 
+Sin `--raw`, cada gol imprime `Particles converted: <Ng>` en ese momento. Al terminar, el resumen incluye `t90`. `--raw` no imprime los goles: solo el resumen `clave valor`.
+
 ### Múltiples realizaciones
 
 `run.py` ejecuta el motor con una semilla distinta por realización.
@@ -115,6 +117,8 @@ data/runs/empty/
 
 ## Animación de las trayectorias
 Por defecto, `run.py` llama a `animate.py` después de terminar todas las realizaciones y genera un GIF y un PNG de la primera.
+
+`animate.py` solo lee el dump del motor. Cada cuadro del GIF o del MP4 es un cuadro de ese archivo: condición inicial, gol, o colisión física guardada cada k eventos. No se interpolan posiciones ni se usan tiempos que no estén en el dump. `--fps` es la velocidad de reproducción.
 
 ```bash
 # Vista previa de cada realización.

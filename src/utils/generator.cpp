@@ -4,6 +4,7 @@
 #include <cmath>
 #include <sstream>
 #include <stdexcept>
+#include <string>
 
 #include "cell_grid.hpp"
 #include "geometry.hpp"
@@ -11,6 +12,7 @@
 
 namespace {
 constexpr double kPi = 3.14159265358979323846;
+constexpr double kMinSpacing = 1.0 + 1e-9;
 
 void validate(const GeneratorConfig &cfg) {
   if (cfg.N < 1)
@@ -60,6 +62,54 @@ bool overlaps_obstacle(double x, double y, double r,
 
 } // namespace
 
+std::vector<Position> hex_sites(double a, double L, double W, double r) {
+  std::vector<Position> sites;
+  const double h = a * std::sqrt(3.0) / 2.0;
+  for (int j = 0; r + j * h <= W - r; ++j) {
+    const double y = r + j * h;
+    const double offset = (j % 2) == 1 ? a / 2.0 : 0.0;
+    for (int i = 0; r + offset + i * a <= L - r; ++i) {
+      sites.push_back({r + offset + i * a, y});
+    }
+  }
+  return sites;
+}
+
+int hex_capacity(double L, double W, double r) {
+  return static_cast<int>(hex_sites(kMinSpacing * 2.0 * r, L, W, r).size());
+}
+
+std::vector<Position> hex_positions(int N, double L, double W, double r,
+                                    double *spacing) {
+  const int capacity = hex_capacity(L, W, r);
+  if (N < 1 || N > capacity) {
+    std::ostringstream msg;
+    msg << "The hexagonal grid admits between 1 and " << capacity
+        << " particles in this table; input: " << N;
+    throw std::runtime_error(msg.str());
+  }
+
+  // Bisection on the spacing
+  double lo = kMinSpacing * 2.0 * r, hi = std::max(L, W);
+  for (int it = 0; it < 100; ++it) {
+    const double mid = 0.5 * (lo + hi);
+    if (static_cast<int>(hex_sites(mid, L, W, r).size()) >= N)
+      lo = mid;
+    else
+      hi = mid;
+  }
+  const std::vector<Position> all = hex_sites(lo, L, W, r);
+  const long long M = static_cast<long long>(all.size());
+  std::vector<Position> chosen;
+  chosen.reserve(static_cast<std::size_t>(N));
+  for (long long i = 0; i < N; ++i)
+    chosen.push_back(
+        all[static_cast<std::size_t>((2 * i * M + N) / (2LL * N))]);
+  if (spacing != nullptr)
+    *spacing = lo;
+  return chosen;
+}
+
 std::vector<Particle> generate_particles(const GeneratorConfig &cfg,
                                          GeneratorStats *stats) {
   validate(cfg);
@@ -85,6 +135,35 @@ std::vector<Particle> generate_particles(const GeneratorConfig &cfg,
 
   const double disc_area = kPi * cfg.r * cfg.r;
   const double table_area = cfg.L * cfg.W;
+
+  if (cfg.placement == Placement::Hex) {
+    double a = 0.0;
+    const std::vector<Position> sites =
+        hex_positions(cfg.N, cfg.L, cfg.W, cfg.r, &a);
+    std::vector<Particle> lattice;
+    lattice.reserve(sites.size());
+    for (const Position &p : sites) {
+      const double theta = angle(rng);
+      lattice.push_back(Particle{p.x, p.y, cfg.r, cfg.v0 * std::cos(theta),
+                                 cfg.v0 * std::sin(theta), cfg.m});
+    }
+    const int bad = find_overlap(lattice, cfg.obstacles, cfg.L, cfg.W);
+    if (bad >= 0)
+      throw std::runtime_error("Hexagonal grid: the particle " +
+                               std::to_string(bad + 1) +
+                               " falls in an obstacle or overlaps (use -init "
+                               "hex without obstacles)");
+    if (stats != nullptr) {
+      stats->attempts = 0;
+      stats->mx = mx;
+      stats->my = my;
+      stats->packing_fraction =
+          (obstacle_area + cfg.N * disc_area) / table_area;
+      stats->lattice_gap = a / (2.0 * cfg.r) - 1.0;
+    }
+    return lattice;
+  }
+
   std::vector<Particle> particles;
 
   particles.reserve(static_cast<std::size_t>(cfg.N));

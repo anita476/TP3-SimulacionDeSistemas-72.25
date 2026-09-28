@@ -4,6 +4,8 @@ Ejemplos:
     python3 python/run.py --outdir data/runs/smoke --reps 3 --tmax 5 --k 100
     python3 python/run.py --outdir data/runs/obstacles --obstacles configs/obstacles_test.txt
     python3 python/run.py --wall data/wall.txt --n 50 100 200 300 --reps 10 --tmax 30
+    python3 python/run.py --wall data/wall_hex/wall.txt --n 500 600 700 --reps 10 --tmax 30 --init hex
+
 
 --outdir:
     Guarda run_<seed>.txt, summary.dat, params.txt y, si corresponde,
@@ -67,6 +69,7 @@ def run_engine(
     tmax: float,
     k: int,
     obstacles: Path | None,
+    init: str,
     out: Path | None,
 ) -> dict[str, str]:
     cmd = [
@@ -77,6 +80,7 @@ def run_engine(
         "-seed", str(seed),
         "-tmax", str(tmax),
         "-k", str(k),
+        "-init", init,
     ]
 
     if obstacles is not None:
@@ -226,6 +230,7 @@ def main() -> None:
         help="cuadro cada k eventos físicos; 0 = inicial y goles",
     )
     parser.add_argument("--obstacles", type=Path)
+    parser.add_argument("--init", choices=("random", "hex"), default="random", help="posiciones iniciales: al azar o red hexagonal (densidades altas)")
     parser.add_argument("--reps", type=int, default=5)
     parser.add_argument("--seed", type=int, default=1)
     parser.add_argument(
@@ -286,7 +291,7 @@ def main() -> None:
             for seed in seeds:
                 summary = run_engine(
                     args.exe, n, args.r, seed,
-                    args.tmax, args.k, args.obstacles, None,
+                    args.tmax, args.k, args.obstacles, args.init, None,
                 )
 
                 append_row(
@@ -337,6 +342,7 @@ def main() -> None:
         f"exe {args.exe}\n"
         f"N {n}\n"
         f"r {args.r}\n"
+        f"init {args.init}\n"
         f"tmax {args.tmax}\n"
         f"k {args.k}\n"
         f"reps {args.reps}\n"
@@ -352,7 +358,7 @@ def main() -> None:
         seed, out = job
         return run_engine(
             args.exe, n, args.r, seed,
-            args.tmax, args.k, obstacles, out,
+            args.tmax, args.k, obstacles, args.init, out,
         )
 
     workers = min(args.jobs, args.reps)

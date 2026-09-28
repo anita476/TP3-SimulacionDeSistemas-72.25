@@ -1,9 +1,9 @@
-# t_m: inicio de la meseta del DCM, estimado visualmente sobre los 30 s de la realización de ejemplo.
-# D se ajusta en [0, t_m] en cada realización. Para cambiar un t_m: editar el número y correr
+# t_e: inicio de la meseta del DCM, estimado visualmente sobre los 30 s de la realización de ejemplo.
+# D se ajusta en [0, t_e] en cada realización. Para cambiar un t_e: editar el número y correr
 #     python python/dcm_report.py
-# Mirar las curvas en docs/results/1.3/t30/dcm30_<config>.png (línea punteada = t_m actual).
+# Mirar las curvas en docs/results/1.3/t30/dcm30_<config>.png (línea punteada = t_e actual).
 #
-# config    t_m (s)
+# config    t_e (s)
 vacia       6
 disco_022   20
 disco       10

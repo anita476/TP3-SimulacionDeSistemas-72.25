@@ -468,7 +468,7 @@ Instituto Tecnológico de Buenos Aires (ITBA)\\
       \begin{resultado}
         \item $D = \DcmDvacia\,\mathrm{m}^{2}/\mathrm{s}$
       \end{resultado}
-      {\scriptsize $D$: una realización; $\pm$: desvío entre $10$ realizaciones.}
+      {\scriptsize DCM de una realización. $D$: promedio de los ajustes de $10$ realizaciones; $\pm$: desvío estándar.}
     \end{column}
   \end{cols}
 \end{frame}
@@ -480,7 +480,7 @@ Instituto Tecnológico de Buenos Aires (ITBA)\\
     \end{column}
     \begin{column}{0.34\textwidth}
       \begin{parametros}
-        \item Puntos en $[0, t_e]$ de la misma realización
+        \item Puntos en $[0, t_e]$ de una realización
       \end{parametros}
       \begin{resultado}
         \item $D^{*} = \DcmDejemplo\,\mathrm{m}^{2}/\mathrm{s}$
@@ -517,9 +517,29 @@ Instituto Tecnológico de Buenos Aires (ITBA)\\
     \end{column}
     \begin{column}{0.34\textwidth}
       \begin{resultado}
-        \item Con obstáculos, $D$ entre $0.002$ y $0.004\,\mathrm{m}^{2}/\mathrm{s}$
+        \item Con obstáculos, $D$ entre $0.0014$ y $0.0032\,\mathrm{m}^{2}/\mathrm{s}$
       \end{resultado}
       {\footnotesize Barras: desvío estándar entre realizaciones ($10$ para $D$ y para $\langle t_{90}\rangle$).}
+    \end{column}
+  \end{cols}
+\end{frame}
+
+\begin{frame}{$\langle t_{90}\rangle$ y $D$ según las columnas}
+  \begin{cols}
+    \begin{column}{0.62\textwidth}
+      \figura{t90_d_vs_columnas.png}
+    \end{column}
+    \begin{column}{0.34\textwidth}
+      \begin{parametros}
+        \item Pared $R = r$, centro $x = 0.60\,\mathrm{m}$
+        \item Mismo eje: columnas
+        \item Línea roja: 18 columnas
+      \end{parametros}
+      \begin{resultado}
+        \item Hasta 18 columnas bajan $D$ y $\langle t_{90}\rangle$
+        \item Después $D$ sigue bajando y $\langle t_{90}\rangle$ sube
+      \end{resultado}
+      {\footnotesize Barras: desvío estándar entre realizaciones.}
     \end{column}
   \end{cols}
 \end{frame}

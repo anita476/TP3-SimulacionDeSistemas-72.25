@@ -13,13 +13,15 @@ Qué calcula:
 - El DCM no tiene un tramo con pendiente 1 sostenida en log-log (ver
   dcm_pendiente_local.txt): D es un coeficiente aparente, que depende del intervalo.
   Por eso también se reporta su sensibilidad a los límites.
-- Como pide la consigna, el valor informado es el de UNA realización (semilla 401):
-  su DCM, su ajuste, su D y su meseta. Las semillas 401-410 solo se usan para la
-  incertidumbre: el ± es el desvío estándar de D (y de la meseta) entre esas 10
-  realizaciones. El promedio, el error estándar de la media y el error del ajuste
-  van en la tabla completa como referencia.
+- Cada DCM es de UNA realización (promedio sobre sus partículas, como pide la consigna);
+  no se promedian curvas entre realizaciones (habría que interpolar a tiempos comunes).
+  Lo que se promedia es D, un escalar por corrida como t90: se ajusta cada una de las
+  10 realizaciones (semillas 401-410) y se informa <D> ± desvío estándar entre ellas.
+  La semilla 401 queda como realización de ejemplo para las figuras del ajuste.
 
-Para cambiar un t_e: editar docs/results/1.3/cortes.txt y volver a correr.
+Para cambiar un t_e: editar docs/results/1.3/cortes.txt y volver a correr, o pasarlo por
+parámetro sin tocar el archivo (pisa cortes.txt solo en esa corrida):
+    python python/dcm_report.py --te disco_022=12 vacia=5
 
 Lee (salidas de run.py, N = 100, k = 10, tf = 30 s):
     data/1.3/t30/<config>/run_401.txt         realización de ejemplo
@@ -32,6 +34,7 @@ Escribe:
 y copia las figuras usadas por la presentación a docs/presentation/images/.
 """
 
+import argparse
 import math
 import shutil
 import statistics as st
@@ -92,6 +95,15 @@ def msd(path: Path) -> list[tuple[float, float]]:
             for f in tr.frames]
 
 
+def covered(config: str) -> float:
+    """Porcentaje del área de la mesa ocupado por obstáculos (todos quedan enteros dentro de la mesa)."""
+    path = DATA / "seeds" / config / "obstacles.txt"
+    if not path.exists():
+        return 0.0
+    discs = [tuple(map(float, line.split())) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
+    return 100.0 * sum(math.pi * rk * rk for _, _, rk in discs) / (L * W)
+
+
 def fit(series, a, b):
     """DCM = b + 4 D t por cuadrados mínimos en [a, b]. Devuelve (D, b, error del ajuste en D, puntos)."""
     pts = [(t, m) for t, m in series if a <= t <= b]
@@ -121,8 +133,26 @@ def rounded(value: float, error: float) -> tuple[str, str]:
     return f"{value:.{decimals}f}", f"{error:.{decimals}f}"
 
 
+def parse_te(items: list[str], names) -> dict[str, float]:
+    """'config=t_e' -> {config: t_e}, verificando que la configuración exista."""
+    out = {}
+    for item in items:
+        name, sep, value = item.partition("=")
+        if not sep or name not in names:
+            raise SystemExit(f"--te {item}: se espera config=segundos con config en {', '.join(map(str, names))}")
+        out[name] = float(value)
+    return out
+
+
 def main() -> None:
+    ap = argparse.ArgumentParser(description="1.3: DCM y D a partir de cortes.txt")
+    ap.add_argument("--te", nargs="+", default=[], metavar="config=t_e",
+                    help="pisa el t_e de cortes.txt para esta corrida, p. ej. --te disco_022=12 vacia=5")
+    cli = ap.parse_args()
     cuts = read_cuts()
+    cuts.update(parse_te(cli.te, [c for c, *_ in CONFIGS]))
+    if cli.te:
+        print("t_e por parámetro:", ", ".join(cli.te), "(cortes.txt no se modifica)")
     example = {c: msd(DATA / c / f"run_{EXAMPLE_SEED}.txt") for c, *_ in CONFIGS}
     seeds = {c: [msd(DATA / "seeds" / c / f"run_{s}.txt") for s in SEEDS] for c, *_ in CONFIGS}
 
@@ -145,10 +175,9 @@ def main() -> None:
         fh.write("# 1.3 — DCM y coeficiente de difusión aparente. N = 100, tf = 30 s, cuadros cada 10 eventos.\n")
         fh.write("# t_e: inicio de la meseta, estimado visualmente sobre la realización de ejemplo (cortes.txt).\n")
         fh.write("# D: ajuste DCM = 4Dt + b en [0, t_e], D = pendiente/4.\n")
-        fh.write("# VALOR INFORMADO: D_ej = realización única (semilla 401), ± D_sd = desvío estándar de D entre\n")
-        fh.write("#   las 10 realizaciones (semillas 401-410), usado como incertidumbre.\n")
-        fh.write("# Referencia: D_media y D_sem (promedio y error estándar de la media de las 10);\n")
-        fh.write("#   D_ej_err_ajuste (error del ajuste; subestima: los residuos de una curva están correlacionados).\n")
+        fh.write("# VALOR INFORMADO: D_media ± D_sd = promedio y desvío estándar de D entre las 10 realizaciones\n")
+        fh.write("#   (semillas 401-410), un ajuste por realización. D_sem = error estándar de la media.\n")
+        fh.write("# D_ej: realización de ejemplo (semilla 401); D_ej_err_ajuste: error del ajuste (subestima).\n")
         fh.write("# D_sens_min/max: D de la realización 401 con inicio 0 o 0.3 s y final 0.75, 1 o 1.25 t_e.\n")
         fh.write("# meseta_ej: DCM medio entre t_e y 30 s en la realización 401; meseta_sd: desvío entre las 10.\n")
         fh.write(f"# t90: del 1.2 ({N_T90} realizaciones, semillas 601-612), no recalculado acá; t90_sem = t90_sd/sqrt({N_T90}).\n")
@@ -158,7 +187,7 @@ def main() -> None:
             fh.write(f"{r['c']} {r['divides']} {r['tm']:g} {r['d']:.5f} {r['sd']:.5f} {r['sem']:.5f} "
                      f"{r['d_ex']:.5f} {r['se_ex']:.5f} {r['n_ex']} {r['sens_lo']:.5f} {r['sens_hi']:.5f} "
                      f"{r['pl_ex']:.4f} {r['pl']:.4f} {r['pl_sd']:.4f} {r['t90']} {r['t90_sd']} {r['t90_sem']:.2f}\n")
-            print(f"{r['c']:9s} t_e {r['tm']:4g} s  D(401) = {r['d_ex']:.5f} ± {r['sd']:.5f}  (media 10: {r['d']:.5f})  "
+            print(f"{r['c']:9s} t_e {r['tm']:4g} s  <D> = {r['d']:.5f} ± {r['sd']:.5f}  (semilla 401: {r['d_ex']:.5f})  "
                   f"sens [{r['sens_lo']:.5f}, {r['sens_hi']:.5f}]  meseta(401) {r['pl_ex']:.3f} ± {r['pl_sd']:.3f} m²")
 
     # Pendiente local en log-log, promedio de las 10 semillas, ventanas [t, 1.5 t]
@@ -179,7 +208,7 @@ def main() -> None:
     # Números para la presentación
     macros = ["% Generado por python/dcm_report.py (docs/results/1.3/cortes.txt). No editar a mano."]
     for r in rows:
-        v, e = rounded(r["d_ex"], r["sd"])
+        v, e = rounded(r["d"], r["sd"])
         lo, hi = rounded(r["sens_lo"], r["sd"])[0], rounded(r["sens_hi"], r["sd"])[0]
         macros += [rf"\newcommand{{\DcmD{r['macro']}}}{{{v} \pm {e}}}",
                    rf"\newcommand{{\DcmCorte{r['macro']}}}{{{r['tm']:g}}}",
@@ -191,15 +220,15 @@ def main() -> None:
     (PRES / "dcm_valores.tex").write_text("\n".join(macros) + "\n", encoding="utf-8")
 
     table = [macros[0],
-             r"\begin{tabular}{lccc}",
+             r"\begin{tabular}{lcccc}",
              r"  \hline",
-             r"  configuración & $t_e$ (s) & $D$ (m$^{2}$/s) & $\langle t_{90}\rangle$ (s) \\",
+             r"  configuración & área ocupada & $t_e$ (s) & $D$ (m$^{2}$/s) & $\langle t_{90}\rangle$ (s) \\",
              r"  \hline"]
-    for r in rows:
-        v, e = rounded(r["d_ex"], r["sd"])
+    for r in sorted(rows, key=lambda r: r["d"], reverse=True):
+        v, e = rounded(r["d"], r["sd"])
         pv, pe = rounded(r["pl_ex"], r["pl_sd"])
         tv, te = rounded(r["t90"], r["t90_sd"])
-        table.append(rf"  {TABLE_NAMES[r['c']]} & ${r['tm']:g}$ & ${v} \pm {e}$ & ${tv} \pm {te}$ \\")
+        table.append(rf"  {TABLE_NAMES[r['c']]} & {covered(r['c']):.0f}\,\% & ${r['tm']:g}$ & ${v} \pm {e}$ & ${tv} \pm {te}$ \\")
     table += [r"  \hline", r"\end{tabular}"]
     (PRES / "dcm_tabla.tex").write_text("\n".join(table) + "\n", encoding="utf-8")
 
@@ -274,11 +303,11 @@ def main() -> None:
     # D frente a <t90>: D de la realización única ± desvío entre realizaciones; <t90> ± desvío
     fig, ax = new_figure()
     for r, mk in zip(rows, tuple(MARKERS) + ("P", "X")):
-        ax.errorbar(r["t90"], r["d_ex"], xerr=r["t90_sd"], yerr=r["sd"], color=r["color"], marker=mk, markersize=8,
+        ax.errorbar(r["t90"], r["d"], xerr=r["t90_sd"], yerr=r["sd"], color=r["color"], marker=mk, markersize=8,
                     markeredgecolor="black", markeredgewidth=0.6, linestyle="none", capsize=4, zorder=3,
                     label=r["label"])
     style_axes(ax, r"$\langle t_{90}\rangle$ (s)", r"$D$ (m$^2$/s)")
-    ax.set_ylim(0, max(r["d_ex"] + r["sd"] for r in rows) * 2.7)
+    ax.set_ylim(0, max(r["d"] + r["sd"] for r in rows) * 2.7)
     apply_sci_axis(ax, "y")
     ax.legend(loc="upper left", frameon=True)
     save_figure(fig, OUT / "d_vs_t90.png")

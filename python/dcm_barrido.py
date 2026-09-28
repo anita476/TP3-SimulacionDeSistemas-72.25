@@ -170,8 +170,8 @@ def cmd_report(te: list[str]) -> None:
         ax.errorbar(cs, [r[i] for r in rows], yerr=[r[i + 1] for r in rows], color=BLUE, marker="o",
                     markeredgecolor="black", markeredgewidth=0.6, capsize=4)
         ax.axvline(best[0], color=VERMILLION, ls="--", lw=1.5, zorder=0)
-        style_axes(ax, "columnas" if ax is bottom else "", ylabel)
-    top.tick_params(labelbottom=False)
+        style_axes(ax, "columnas", ylabel)
+    top.tick_params(labelbottom=True)
     save_figure(fig, OUT / "t90_d_vs_columnas.png")
     shutil.copyfile(OUT / "t90_d_vs_columnas.png", ROOT / "docs" / "presentation" / "images" / "t90_d_vs_columnas.png")
     print("figuras en", OUT)

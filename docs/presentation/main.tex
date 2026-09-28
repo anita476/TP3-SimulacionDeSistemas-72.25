@@ -7,9 +7,6 @@
 \hypersetup{colorlinks=true, urlcolor=blue, linkcolor=blue}
 \usepackage{algorithm}
 \usepackage{algpseudocode}
-\usepackage{appendixnumberbeamer}
-
-
 \newif\ifshowvideo 
 \showvideotrue
 %% cambiar para mostrar las animaciones embebdidas o los stills$$
@@ -262,7 +259,7 @@ Instituto Tecnológico de Buenos Aires (ITBA)\\
         \item $N = 100$
         \item $t_{\max} = 100\,\mathrm{s}$
         \item $k = 300$
-        \item $12$ realizaciones
+        \item $10$ realizaciones
         \item Centro $(0.60,\ 0.34)\,\mathrm{m}$
         \item $R = 0.22\,\mathrm{m}$
       \end{parametros}
@@ -520,10 +517,9 @@ Instituto Tecnológico de Buenos Aires (ITBA)\\
     \end{column}
     \begin{column}{0.34\textwidth}
       \begin{resultado}
-        \item Mesa vacía: mayor $D$ y mayor $\langle t_{90}\rangle$
         \item Con obstáculos, $D$ entre $0.002$ y $0.004\,\mathrm{m}^{2}/\mathrm{s}$
       \end{resultado}
-      {\footnotesize Barras: desvío estándar entre realizaciones ($10$ para $D$, $12$ para $\langle t_{90}\rangle$).}
+      {\footnotesize Barras: desvío estándar entre realizaciones ($10$ para $D$ y para $\langle t_{90}\rangle$).}
     \end{column}
   \end{cols}
 \end{frame}
@@ -539,13 +535,6 @@ Instituto Tecnológico de Buenos Aires (ITBA)\\
 
 \begin{frame}[plain,noframenumbering]
   \vfill\centering{\Huge\usebeamercolor[fg]{structure}Muchas gracias}\vfill
-\end{frame}
-
-\appendix
-\section*{Apéndice}
-
-
-\begin{frame}{Apéndice: por qué el ajuste usa $N \leq 300$}
 \end{frame}
 
 \end{document}

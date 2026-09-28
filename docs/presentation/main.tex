@@ -134,7 +134,7 @@ Instituto Tecnológico de Buenos Aires (ITBA)\\
               \[ t_{90} = \min\{t : F_u(t) \geq 0.9\} \]
         \item Promedio entre las realizaciones:
               \[ \langle t_{90}\rangle = \frac{1}{n}\sum_{k=1}^{n} t_{90,k} \]
-        \item $\langle\Delta r^{2}\rangle = 4Dt$
+        \item $\langle\Delta r^{2}\rangle = 4Dt$, con $t\in [0,t_e]$
         \item Barra de error (desvío estándar muestral):
               $ \sigma = \sqrt{\frac{\sum_{k=1}^{n}
                  \left(t_{90,k}-\langle t_{90}\rangle\right)^{2}}{n-1} }$
@@ -462,13 +462,12 @@ Instituto Tecnológico de Buenos Aires (ITBA)\\
     \begin{column}{0.34\textwidth}
       \begin{parametros}
         \item Mesa vacía, $N = 100$, $t_f = 30\,\mathrm{s}$
-        \item $t_e = \DcmCortevacia\,\mathrm{s}$: inicio del estacionario
-        \item Ajuste de $4Dt + b$ en $[0, t_e]$
+        \item $t_e$ estacionario según configuración obstáculos
       \end{parametros}
       \begin{resultado}
         \item $D = \DcmDvacia\,\mathrm{m}^{2}/\mathrm{s}$
       \end{resultado}
-      {\scriptsize DCM de una realización. $D$: promedio de los ajustes de $10$ realizaciones; $\pm$: desvío estándar.}
+      {\scriptsize DCM una realización. $D$: promedio ajustes de $10$ realizaciones.}
     \end{column}
   \end{cols}
 \end{frame}
@@ -481,6 +480,7 @@ Instituto Tecnológico de Buenos Aires (ITBA)\\
     \begin{column}{0.34\textwidth}
       \begin{parametros}
         \item Puntos en $[0, t_e]$ de una realización
+        \item Semilla 401
       \end{parametros}
       \begin{resultado}
         \item $D^{*} = \DcmDejemplo\,\mathrm{m}^{2}/\mathrm{s}$
@@ -490,17 +490,8 @@ Instituto Tecnológico de Buenos Aires (ITBA)\\
 \end{frame}
 
 \begin{frame}{Desplazamiento cuadrático medio según la configuración}
-  \begin{cols}
-    \begin{column}{0.62\textwidth}
+    \centering   
       \figura{dcm_configs.png}
-    \end{column}
-    \begin{column}{0.34\textwidth}
-      \begin{parametros}
-        \item Una realización por configuración
-        \item Misma semilla, $t_f = 30\,\mathrm{s}$
-      \end{parametros}
-    \end{column}
-  \end{cols}
 \end{frame}
 
 \begin{frame}{$D$ y $\langle t_{90}\rangle$}
@@ -510,19 +501,6 @@ Instituto Tecnológico de Buenos Aires (ITBA)\\
   \par\vspace{8pt}
 \end{frame}
 
-\begin{frame}{$D$ en función de $\langle t_{90}\rangle$}
-  \begin{cols}
-    \begin{column}{0.62\textwidth}
-      \figura{d_vs_t90.png}
-    \end{column}
-    \begin{column}{0.34\textwidth}
-      \begin{resultado}
-        \item Con obstáculos, $D$ entre $0.0014$ y $0.0032\,\mathrm{m}^{2}/\mathrm{s}$
-      \end{resultado}
-      {\footnotesize Barras: desvío estándar entre realizaciones ($10$ para $D$ y para $\langle t_{90}\rangle$).}
-    \end{column}
-  \end{cols}
-\end{frame}
 
 \begin{frame}{$\langle t_{90}\rangle$ y $D$ según las columnas}
   \begin{cols}
@@ -532,14 +510,12 @@ Instituto Tecnológico de Buenos Aires (ITBA)\\
     \begin{column}{0.34\textwidth}
       \begin{parametros}
         \item Pared $R = r$, centro $x = 0.60\,\mathrm{m}$
-        \item Mismo eje: columnas
-        \item Línea roja: 18 columnas
+        \item Línea punteada: 18 columnas
       \end{parametros}
       \begin{resultado}
-        \item Hasta 18 columnas bajan $D$ y $\langle t_{90}\rangle$
-        \item Después $D$ sigue bajando y $\langle t_{90}\rangle$ sube
+        \item Tendencia compartida hasta 18 columnas
+        \item Luego del óptimo comportamiento diferente
       \end{resultado}
-      {\footnotesize Barras: desvío estándar entre realizaciones.}
     \end{column}
   \end{cols}
 \end{frame}

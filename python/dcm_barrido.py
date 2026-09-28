@@ -174,6 +174,39 @@ def cmd_report(te: list[str]) -> None:
     top.tick_params(labelbottom=True)
     save_figure(fig, OUT / "t90_d_vs_columnas.png")
     shutil.copyfile(OUT / "t90_d_vs_columnas.png", ROOT / "docs" / "presentation" / "images" / "t90_d_vs_columnas.png")
+
+    # Respaldo: las 18 curvas de 30 s (semilla 401) con su t_e, y tabla con todos los t_e
+    fig, axs = plt.subplots(3, 6, figsize=(24, 11), layout="constrained")
+    for ax, (c, te, *_rest) in zip(axs.flat, rows):
+        s = read_msd(DATA / f"pared_{c}" / f"msd_{EXAMPLE_SEED}.txt")
+        ax.plot([t for t, _ in s], [m for _, m in s], color=BLUE, lw=1)
+        ax.axvline(te, color="gray", ls="--", lw=1.8)
+        ax.set_title(rf"{c} col.: $t_e = {te:g}$ s", fontsize=19)
+        ax.set_xlim(0, 30)
+        ax.set_ylim(0, max(m for _, m in s) * 1.1)
+        ax.set_xticks(range(0, 31, 10))
+        ax.grid(alpha=0.4)
+        ax.tick_params(labelsize=14)
+        ax.ticklabel_format(axis="y", style="plain")
+    fig.supxlabel("tiempo (s)", fontsize=18)
+    fig.supylabel(r"DCM (m$^2$)", fontsize=18)
+    fig.savefig(OUT / "respaldo_te_barrido.png", dpi=110)
+    plt.close(fig)
+    shutil.copyfile(OUT / "respaldo_te_barrido.png", ROOT / "docs" / "presentation" / "images" / "respaldo_te_barrido.png")
+
+    half = (len(rows) + 1) // 2
+    cells = []
+    for c, te, d, sd, m, s in rows:
+        dv, de = rounded(d, sd)
+        cells.append(rf"{c} & ${te:g}$ & ${dv} \pm {de}$ & ${m:.1f} \pm {s:.1f}$")
+    head = r"columnas & $t_e$ (s) & $D$ (m$^{2}$/s) & $\langle t_{90}\rangle$ (s)"
+    tex = ["% Generado por python/dcm_barrido.py (docs/results/1.3/cortes_barrido.txt). No editar a mano.",
+           r"\begin{tabular}{cccc|cccc}", r"  \hline", f"  {head} & {head} \\\\", r"  \hline"]
+    for i in range(half):
+        right = cells[i + half] if i + half < len(cells) else "& & &"
+        tex.append(f"  {cells[i]} & {right} \\\\")
+    tex += [r"  \hline", r"\end{tabular}"]
+    (ROOT / "docs" / "presentation" / "dcm_barrido_tabla.tex").write_text("\n".join(tex) + "\n", encoding="utf-8")
     print("figuras en", OUT)
 
 

@@ -533,4 +533,27 @@ Instituto Tecnológico de Buenos Aires (ITBA)\\
   \vfill\centering{\Huge\usebeamercolor[fg]{structure}Muchas gracias}\vfill
 \end{frame}
 
+% Respaldo para preguntas (no se presenta). Figuras y tabla generadas por
+% python/dcm_report.py y python/dcm_barrido.py a partir de cortes*.txt.
+\begin{frame}[noframenumbering]{Apéndice: elección de $t_e$ por configuración}
+  \centering
+  \includegraphics[width=\linewidth,height=0.8\textheight,keepaspectratio]{respaldo_te_configs.png}
+  \par{\scriptsize Una realización (semilla 401). Punteada: $t_e$. Naranja: ajuste $4Dt + b$ en $[0, t_e]$.}
+\end{frame}
+
+\begin{frame}[noframenumbering]{Apéndice}
+  \centering
+  \includegraphics[width=\linewidth,height=0.8\textheight,keepaspectratio]{respaldo_te_barrido.png}
+  \par{\scriptsize Una realización (semilla 401). Punteada: $t_e$.}
+\end{frame}
+
+\begin{frame}[noframenumbering]{Apéndice: $t_e$, $D$ y $\langle t_{90}\rangle$ en el barrido de columnas}
+  \centering\scriptsize
+  \renewcommand{\arraystretch}{1.2}
+  \setlength{\tabcolsep}{4pt}
+  \input{dcm_barrido_tabla}
+  \par\vspace{6pt}
+  {$D$: promedio de $10$ realizaciones $\pm$ desvío estándar. Pared $R = r$, centro $x = 0.60\,\mathrm{m}$.}
+\end{frame}
+
 \end{document}

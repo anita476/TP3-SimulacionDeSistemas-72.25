@@ -312,7 +312,27 @@ def main() -> None:
     ax.legend(loc="upper left", frameon=True)
     save_figure(fig, OUT / "d_vs_t90.png")
 
-    for name in ("dcm_vacia", "dcm_error", "dcm_configs", "dcm_loglog", "d_vs_t90"):
+    # Respaldo: las seis curvas de 30 s (semilla 401) con su t_e y la recta del ajuste
+    import matplotlib.pyplot as plt
+    fig, axs = plt.subplots(2, 3, figsize=(15, 8), layout="constrained")
+    for ax, r in zip(axs.flat, rows):
+        s = example[r["c"]]
+        ax.plot([t for t, _ in s], [m for _, m in s], color=BLUE, lw=1)
+        ax.plot([0, r["tm"]], [r["b_ex"], r["b_ex"] + 4 * r["d_ex"] * r["tm"]], color=VERMILLION, lw=2.5)
+        ax.axvline(r["tm"], color="gray", ls="--", lw=1.5)
+        ax.set_title(rf"{SHORT[r['c']]}: $t_e = {r['tm']:g}$ s", fontsize=18)
+        ax.set_xlim(0, 30)
+        ax.set_ylim(0, max(m for _, m in s) * 1.15)
+        ax.set_xticks(range(0, 31, 5))
+        ax.grid(alpha=0.4)
+        ax.tick_params(labelsize=14)
+        ax.ticklabel_format(axis="y", style="plain")
+        ax.set_xlabel("tiempo (s)", fontsize=15)
+        ax.set_ylabel(r"DCM (m$^2$)", fontsize=15)
+    fig.savefig(OUT / "respaldo_te_configs.png", dpi=150)
+    plt.close(fig)
+
+    for name in ("dcm_vacia", "dcm_error", "dcm_configs", "dcm_loglog", "d_vs_t90", "respaldo_te_configs"):
         shutil.copyfile(OUT / f"{name}.png", PRES / "images" / f"{name}.png")
     print("figuras copiadas a docs/presentation/images/; macros y tabla en docs/presentation/")
 

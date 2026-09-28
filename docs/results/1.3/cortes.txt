@@ -8,5 +8,5 @@ vacia       6
 disco_022   20
 disco       10
 pared_9     4
-pared_18    9
-pared_23    8
+pared_18    13
+pared_23    20

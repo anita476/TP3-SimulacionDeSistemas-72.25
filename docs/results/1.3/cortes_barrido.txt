@@ -1,6 +1,6 @@
 # t_e del barrido de columnas (pared R = r, centro x = 0.60 m): inicio del estacionario,
 # elegido a ojo sobre la semilla 401 (docs/results/1.3/barrido/dcm30_pared_<c>.png, hoja_curvas.png).
-# 18 y 23 son los mismos que en cortes.txt. Editar y correr:
+# 18 y 23 son los mismos que en cortes.txt (pared_18, pared_23). Editar y correr:
 #     python python/dcm_barrido.py report
 # columnas  t_e (s)
 1   4
@@ -12,12 +12,12 @@
 12  8
 14  10
 15  10
-16  10
+16  11
 17  12
-18  9
+18  13
 19  15
-20  10
+20  15
 21  15
 22  16
-23  8
+23  20
 24  28

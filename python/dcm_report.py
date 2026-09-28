@@ -62,12 +62,13 @@ CONFIGS = [
     ("disco", r"disco $R = 0.34$ m", "discogrande", "sí", VERMILLION, 16.96, 1.99),
     ("pared_9", "pared de 9 columnas", "paredA", "sí", GREEN, 14.21, 1.41),
     ("pared_18", "pared de 18 columnas", "paredB", "sí", PURPLE, 13.67, 1.31),
+    ("pared_23", "pared de 23 columnas", "paredC", "sí", "#56B4E9", 17.0065, 1.66604),
 ]
 SHORT = {"vacia": "vacía", "disco_022": r"disco $0.22$ m", "disco": r"disco $0.34$ m",
-         "pared_9": "pared 9 col.", "pared_18": "pared 18 col."}
+         "pared_9": "pared 9 col.", "pared_18": "pared 18 col.", "pared_23": "pared 23 col."}
 TABLE_NAMES = {"vacia": "mesa vacía", "disco_022": r"disco, $R = 0.22\,\mathrm{m}$",
                "disco": r"disco, $R = 0.34\,\mathrm{m}$", "pared_9": "pared, 9 columnas",
-               "pared_18": "pared, 18 columnas"}
+               "pared_18": "pared, 18 columnas", "pared_23": "pared, 23 columnas"}
 
 
 def read_cuts() -> dict[str, float]:
@@ -190,15 +191,15 @@ def main() -> None:
     (PRES / "dcm_valores.tex").write_text("\n".join(macros) + "\n", encoding="utf-8")
 
     table = [macros[0],
-             r"\begin{tabular}{lccccc}",
+             r"\begin{tabular}{lccc}",
              r"  \hline",
-             r"  configuración & divide la mesa & $t_m$ (s) & $D$ (m$^{2}$/s) & meseta (m$^{2}$) & $\langle t_{90}\rangle$ (s) \\",
+             r"  configuración & $t_m$ (s) & $D$ (m$^{2}$/s) & $\langle t_{90}\rangle$ (s) \\",
              r"  \hline"]
     for r in rows:
         v, e = rounded(r["d_ex"], r["sd"])
         pv, pe = rounded(r["pl_ex"], r["pl_sd"])
         tv, te = rounded(r["t90"], r["t90_sd"])
-        table.append(rf"  {TABLE_NAMES[r['c']]} & {r['divides']} & ${r['tm']:g}$ & ${v} \pm {e}$ & ${pv} \pm {pe}$ & ${tv} \pm {te}$ \\")
+        table.append(rf"  {TABLE_NAMES[r['c']]} & ${r['tm']:g}$ & ${v} \pm {e}$ & ${tv} \pm {te}$ \\")
     table += [r"  \hline", r"\end{tabular}"]
     (PRES / "dcm_tabla.tex").write_text("\n".join(table) + "\n", encoding="utf-8")
 
@@ -272,12 +273,12 @@ def main() -> None:
 
     # D frente a <t90>: D de la realización única ± desvío entre realizaciones; <t90> ± desvío
     fig, ax = new_figure()
-    for r, mk in zip(rows, MARKERS * 2):
+    for r, mk in zip(rows, tuple(MARKERS) + ("P", "X")):
         ax.errorbar(r["t90"], r["d_ex"], xerr=r["t90_sd"], yerr=r["sd"], color=r["color"], marker=mk, markersize=8,
                     markeredgecolor="black", markeredgewidth=0.6, linestyle="none", capsize=4, zorder=3,
                     label=r["label"])
     style_axes(ax, r"$\langle t_{90}\rangle$ (s)", r"$D$ (m$^2$/s)")
-    ax.set_ylim(0, max(r["d_ex"] + r["sd"] for r in rows) * 2.0)
+    ax.set_ylim(0, max(r["d_ex"] + r["sd"] for r in rows) * 2.7)
     apply_sci_axis(ax, "y")
     ax.legend(loc="upper left", frameon=True)
     save_figure(fig, OUT / "d_vs_t90.png")

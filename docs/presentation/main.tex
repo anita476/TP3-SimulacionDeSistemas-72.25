@@ -533,8 +533,58 @@ Instituto Tecnológico de Buenos Aires (ITBA)\\
   \vfill\centering{\Huge\usebeamercolor[fg]{structure}Muchas gracias}\vfill
 \end{frame}
 
-% Respaldo para preguntas (no se presenta). Figuras y tabla generadas por
-% python/dcm_report.py y python/dcm_barrido.py a partir de cortes*.txt.
+% Respaldo para preguntas (no se presenta).
+% Punto 1: docs/results/1.1/1.1_tiempo_de_ejecucion.md.
+\begin{frame}[noframenumbering]{Apéndice: ajuste de la ley de potencia}
+  \begin{cols}
+    \begin{column}{0.55\textwidth}
+      \includegraphics[width=\linewidth,height=0.78\textheight,keepaspectratio]{runtime_error.png}
+    \end{column}
+    \begin{column}{0.42\textwidth}
+      \small
+      Modelo $t = c\,N^{a}$. Con logaritmos:
+      \[ \log t = \log c + a \log N \]
+      Para cada $a$, el mejor $\log c$ y el error:
+      \[ E(a) = \sum_{i=1}^{12}\left[\log t_i - \log c(a) - a\log N_i\right]^{2} \]
+      $12$ puntos con $N \leq 300$, $t_i$ = promedio de $10$ realizaciones.
+      \begin{resultado}
+        \item Mínimo en $a = 2.99 \pm 0.06$
+      \end{resultado}
+    \end{column}
+  \end{cols}
+\end{frame}
+
+\begin{frame}[noframenumbering]{Apéndice: por qué $N^{3}$}
+  \begin{cols}
+    \begin{column}{0.49\textwidth}
+      \includegraphics[width=\linewidth,height=0.6\textheight,keepaspectratio]{runtime_events_loglog.png}
+    \end{column}
+    \begin{column}{0.49\textwidth}
+      \includegraphics[width=\linewidth,height=0.6\textheight,keepaspectratio]{runtime_per_event.png}
+    \end{column}
+  \end{cols}
+  \small
+  \[ t = \underbrace{E(N)}_{\propto N^{2.05}} \cdot \underbrace{\tau(N)}_{\propto N^{0.95}} \propto N^{3.0} \]
+  {\footnotesize $E$: eventos en $30\,\mathrm{s}$ (más partículas, y cada una choca más seguido).
+  $\tau$: costo por evento; se avanzan las $N$ partículas y se recalculan los choques de la que chocó contra las otras $N$.}
+\end{frame}
+
+% Punto 3: figuras y tablas generadas por python/dcm_report.py y
+% python/dcm_barrido.py a partir de cortes*.txt.
+\begin{frame}[noframenumbering]{Apéndice: cálculo del DCM y de $D$}
+  \small
+  \begin{enumerate}\setlength{\itemsep}{6pt}
+    \item Estado guardado cada $10$ eventos (y en cada gol), en su tiempo de evento.
+    \item En cada cuadro, promedio sobre las $N = 100$ partículas (frescas y usadas):
+          \[ \langle\Delta r^{2}\rangle(t) = \frac{1}{N}\sum_{i=1}^{N}\left|\vv{r}_i(t) - \vv{r}_i(0)\right|^{2} \]
+    \item $t_e$: inicio del estacionario, elegido a ojo sobre la curva de $30\,\mathrm{s}$.
+    \item Ajuste en $[0, t_e]$ (Teórica 0), con $b(D)$ el mejor $b$ para cada $D$:
+          \[ E(D) = \sum_{i}\left[\langle\Delta r^{2}\rangle_i - 4Dt_i - b(D)\right]^{2}, \qquad D = \frac{\text{pendiente}}{4} \]
+    \item Se repite en $10$ realizaciones: $\langle D\rangle \pm$ desvío estándar.
+  \end{enumerate}
+  {\footnotesize Se promedian escalares ($D$, $t_{90}$) entre realizaciones, no curvas: los tiempos de evento de dos corridas no coinciden.}
+\end{frame}
+
 \begin{frame}[noframenumbering]{Apéndice: elección de $t_e$ por configuración}
   \centering
   \includegraphics[width=\linewidth,height=0.8\textheight,keepaspectratio]{respaldo_te_configs.png}
